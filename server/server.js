@@ -1,0 +1,78 @@
+require('dotenv').config();
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const Booking = require('./models/Booking');
+const Service = require('./models/Service');
+
+const app = express();
+const PORT = process.env.PORT || 5000;
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+
+// MongoDB Connection
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/cleancare';
+
+mongoose.connect(MONGO_URI)
+  .then(() => console.log('✅ MongoDB connected successfully'))
+  .catch(err => console.error('❌ MongoDB connection error:', err));
+
+// Routes
+app.get('/api/bookings', async (req, res) => {
+    try {
+        const bookings = await Booking.find().sort({ createdAt: -1 }); // Newest first
+        res.status(200).json(bookings);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch bookings' });
+    }
+});
+
+app.post('/api/bookings', async (req, res) => {
+    try {
+        const newBooking = new Booking(req.body);
+        const savedBooking = await newBooking.save();
+        
+        console.log('New booking saved:', savedBooking);
+        res.status(201).json({ success: true, message: 'Booking saved successfully!', data: savedBooking });
+    } catch (error) {
+        console.error('Error saving booking:', error);
+        res.status(500).json({ success: false, message: 'Failed to save booking', error: error.message });
+    }
+});
+
+// Service Routes
+app.get('/api/services', async (req, res) => {
+    try {
+        const services = await Service.find().sort({ createdAt: -1 });
+        res.status(200).json(services);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch services' });
+    }
+});
+
+app.post('/api/services', async (req, res) => {
+    try {
+        const newService = new Service(req.body);
+        const savedService = await newService.save();
+        res.status(201).json({ success: true, message: 'Service added successfully!', data: savedService });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Failed to add service', error: error.message });
+    }
+});
+
+app.delete('/api/services/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        await Service.findByIdAndDelete(id);
+        res.status(200).json({ success: true, message: 'Service deleted successfully!' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Failed to delete service', error: error.message });
+    }
+});
+
+// Start Server
+app.listen(PORT, () => {
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
+});
