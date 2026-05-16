@@ -40,6 +40,9 @@ const MainWebsite = () => {
     const [showProfileModal, setShowProfileModal] = useState(false);
     const [customerProfileData, setCustomerProfileData] = useState(null);
     const [loadingProfile, setLoadingProfile] = useState(false);
+    
+    // Promo State
+    const [showPromoPopup, setShowPromoPopup] = useState(true);
 
     const loadCustomerProfile = async () => {
         if (!customer) return;
@@ -182,10 +185,14 @@ const MainWebsite = () => {
         
         setIsSubmitting(true);
         
+        const baseTotal = formData.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const isEligibleForDiscount = formData.paymentMethod === 'UPI';
+        const finalTotal = isEligibleForDiscount ? Math.round(baseTotal * 0.9) : baseTotal;
+
         const payload = {
             ...formData,
             email: customer.email,
-            totalAmount: formData.items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+            totalAmount: finalTotal
         };
         
         try {
@@ -835,8 +842,23 @@ const MainWebsite = () => {
                                                 <span className="bg-brand-200 text-brand-700 px-2 py-0.5 rounded-full text-xs">{formData.items.reduce((s, i) => s + i.quantity, 0)} items</span>
                                                 Total Amount:
                                             </div>
-                                            <div className="text-2xl font-extrabold text-brand-600">
-                                                ₹{formData.items.reduce((sum, item) => sum + (item.price * item.quantity), 0)}
+                                            <div className="text-right">
+                                                {(() => {
+                                                    const baseTotal = formData.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                                                    const isEligibleForDiscount = formData.paymentMethod === 'UPI';
+                                                    if (isEligibleForDiscount) {
+                                                        const finalTotal = Math.round(baseTotal * 0.9);
+                                                        return (
+                                                            <>
+                                                                <div className="text-sm text-slate-400 line-through">₹{baseTotal}</div>
+                                                                <div className="text-2xl font-extrabold text-emerald-600 flex items-center gap-2">
+                                                                    ₹{finalTotal} <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full whitespace-nowrap">10% OFF</span>
+                                                                </div>
+                                                            </>
+                                                        );
+                                                    }
+                                                    return <div className="text-2xl font-extrabold text-brand-600">₹{baseTotal}</div>;
+                                                })()}
                                             </div>
                                         </div>
                                     )}
@@ -1037,6 +1059,27 @@ const MainWebsite = () => {
                     </div>
                 </div>
             </footer>
+        {showPromoPopup && (
+            <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                <div className="bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-3xl p-1 w-full max-w-sm shadow-2xl relative animate-fade-in">
+                    <div className="bg-white rounded-[22px] p-8 text-center relative overflow-hidden">
+                        <div className="absolute -top-10 -right-10 w-32 h-32 bg-emerald-100 rounded-full blur-2xl opacity-50"></div>
+                        <button onClick={() => setShowPromoPopup(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors bg-slate-50 hover:bg-slate-100 rounded-full p-1 z-10">
+                            <X size={20} />
+                        </button>
+                        <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-5 text-emerald-600 shadow-inner">
+                            <Sparkles size={40} />
+                        </div>
+                        <h3 className="text-3xl font-black text-slate-800 mb-2 tracking-tight">10% OFF</h3>
+                        <p className="text-slate-700 font-bold text-lg mb-2">On All Prepaid Orders!</p>
+                        <p className="text-sm text-slate-500 mb-8 leading-relaxed font-medium">Select <span className="font-bold text-slate-700">UPI</span> as your payment method at checkout to automatically get a flat 10% discount on your entire bill.</p>
+                        <button onClick={() => setShowPromoPopup(false)} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-emerald-500/30 transition-all text-lg tracking-wide">
+                            Book Now
+                        </button>
+                    </div>
+                </div>
+            </div>
+        )}
         {showLoginModal && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
                 <div className="bg-white rounded-2xl p-6 md:p-8 w-full max-w-md shadow-2xl relative animate-fade-in">
