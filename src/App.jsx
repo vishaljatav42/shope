@@ -70,13 +70,31 @@ const MainWebsite = () => {
                 const res = await fetch('http://localhost:8000/api/services');
                 if (res.ok) {
                     const data = await res.json();
-                    setDbServices(data);
-                    if (data.length > 0) {
+                    if (data && data.length > 0) {
+                        setDbServices(data);
                         setFormData(prev => ({...prev, service: data[0].name}));
+                    } else {
+                        // Fallback if database is empty
+                        const defaultServices = [
+                            { name: 'Dry Cleaning', description: 'Premium dry cleaning for delicate fabrics and special garments.', price: 150 },
+                            { name: 'Wash & Fold', description: 'Standard washing and folding service for everyday clothes.', price: 60 },
+                            { name: 'Steam Ironing', description: 'Professional steam ironing for crisp, wrinkle-free clothes.', price: 20 },
+                            { name: 'Deep Cleaning', description: 'Thorough deep cleaning for heavy items like blankets and curtains.', price: 300 }
+                        ];
+                        setDbServices(defaultServices);
+                        setFormData(prev => ({...prev, service: defaultServices[0].name}));
                     }
                 }
             } catch (error) {
                 console.error('Failed to load services:', error);
+                // Fallback on error
+                const defaultServices = [
+                    { name: 'Dry Cleaning', description: 'Premium dry cleaning for delicate fabrics and special garments.', price: 150 },
+                    { name: 'Wash & Fold', description: 'Standard washing and folding service for everyday clothes.', price: 60 },
+                    { name: 'Steam Ironing', description: 'Professional steam ironing for crisp, wrinkle-free clothes.', price: 20 },
+                    { name: 'Deep Cleaning', description: 'Thorough deep cleaning for heavy items like blankets and curtains.', price: 300 }
+                ];
+                setDbServices(defaultServices);
             } finally {
                 setIsLoadingServices(false);
             }

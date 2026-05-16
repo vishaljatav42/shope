@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Save, Building2, Phone, CalendarClock, CreditCard, Bell, Palette, Shield, Mail, MapPin, MessageCircle } from 'lucide-react';
 
-const SettingsManager = () => {
+const SettingsManager = ({ onThemeChange }) => {
   const [activeTab, setActiveTab] = useState('general');
   const [settings, setSettings] = useState({
     businessName: '', tagline: '', address: '',
@@ -27,6 +27,9 @@ const SettingsManager = () => {
           const { qrCodeImage: fetchedQr, ...restSettings } = response.data;
           setSettings(prev => ({ ...prev, ...restSettings }));
           if (fetchedQr) setQrCodeImage(fetchedQr);
+          if (onThemeChange && typeof restSettings.darkMode !== 'undefined') {
+            onThemeChange(restSettings.darkMode);
+          }
         }
       } catch (err) {
         console.error('Failed to load settings:', err);
@@ -39,10 +42,16 @@ const SettingsManager = () => {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
+    const finalValue = type === 'checkbox' ? checked : value;
+    
     setSettings(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: finalValue
     }));
+
+    if (name === 'darkMode' && onThemeChange) {
+      onThemeChange(finalValue);
+    }
   };
 
   const handleImageUpload = (e) => {
