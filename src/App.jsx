@@ -41,6 +41,9 @@ const MainWebsite = () => {
     const [customerProfileData, setCustomerProfileData] = useState(null);
     const [loadingProfile, setLoadingProfile] = useState(false);
     
+    // Booking Form State
+    const [bookingStep, setBookingStep] = useState(1);
+    
     // Promo State
     const [showPromoPopup, setShowPromoPopup] = useState(true);
 
@@ -170,13 +173,38 @@ const MainWebsite = () => {
         return () => clearInterval(interval);
     }, []);
 
+    const handleNextStep = () => {
+        if (bookingStep === 1) {
+            if (!formData.name || !formData.phone) {
+                alert('Please fill in your name and mobile number.');
+                return;
+            }
+            if (formData.phone.length < 10) {
+                alert('Please enter a valid mobile number.');
+                return;
+            }
+            setBookingStep(2);
+        } else if (bookingStep === 2) {
+            if (formData.items.length === 0) {
+                alert('Please select at least one service to continue.');
+                return;
+            }
+            setBookingStep(3);
+        } else if (bookingStep === 3) {
+            if (!formData.date || !formData.time || !formData.address) {
+                alert('Please fill in pickup date, time, and address.');
+                return;
+            }
+            setBookingStep(4);
+        }
+    };
+
+    const handlePrevStep = () => {
+        setBookingStep(prev => Math.max(1, prev - 1));
+    };
+
     const handleBooking = async (e) => {
         e.preventDefault();
-        if (formData.items.length === 0) {
-            alert('Please select at least one service by adding quantities.');
-            setIsServicesOpen(true);
-            return;
-        }
         
         if (!customer) {
             setShowLoginModal(true);
@@ -210,6 +238,7 @@ const MainWebsite = () => {
                 // Reset form
                 setFormData({ name: '', phone: '', items: [], date: '', time: '', address: '', instructions: '', paymentMethod: 'Cash on Delivery' });
                 setPaymentScreenshot('');
+                setBookingStep(1); // Reset to first step
                 setTimeout(() => setBookingSuccess(false), 5000);
             } else {
                 alert('Failed to save booking. Please try again.');
@@ -693,227 +722,299 @@ const MainWebsite = () => {
                                 <Shirt size={32} className="text-white -rotate-12" />
                             </div>
                             
-                            <form onSubmit={handleBooking} className="space-y-6 mt-4">
-                                <div>
-                                    <label className="block text-sm font-bold text-slate-700 mb-2">Your Name</label>
-                                    <input 
-                                        type="text" 
-                                        required 
-                                        value={formData.name}
-                                        onChange={(e) => setFormData({...formData, name: e.target.value})}
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 transition-all font-medium text-slate-900"
-                                        placeholder="Enter full name"
-                                    />
-                                </div>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                    <div>
-                                        <label className="block text-sm font-bold text-slate-700 mb-2">Mobile Number</label>
-                                        <input 
-                                            type="tel" 
-                                            required 
-                                            value={formData.phone}
-                                            onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 transition-all font-medium text-slate-900"
-                                            placeholder="10-digit number"
-                                        />
+                            {/* Stepper UI */}
+                            <div className="flex items-center justify-between mb-8 mt-4 relative">
+                                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-slate-100 rounded-full z-0"></div>
+                                <div className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-brand-500 rounded-full z-0 transition-all duration-500" style={{ width: `${((bookingStep - 1) / 3) * 100}%` }}></div>
+                                
+                                {[1, 2, 3, 4].map(step => (
+                                    <div key={step} className={`relative z-10 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 ${
+                                        bookingStep === step ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/40 ring-4 ring-brand-100' :
+                                        bookingStep > step ? 'bg-brand-500 text-white' : 'bg-slate-100 text-slate-400 border-2 border-white'
+                                    }`}>
+                                        {bookingStep > step ? <CheckCircle2 size={16} /> : step}
                                     </div>
-                                    <div className="col-span-1 sm:col-span-2">
+                                ))}
+                            </div>
+                            <div className="flex justify-between text-xs font-bold text-slate-400 mb-8 uppercase tracking-wider">
+                                <span className={bookingStep >= 1 ? 'text-brand-600' : ''}>Contact</span>
+                                <span className={bookingStep >= 2 ? 'text-brand-600' : ''}>Services</span>
+                                <span className={bookingStep >= 3 ? 'text-brand-600' : ''}>Pickup</span>
+                                <span className={bookingStep >= 4 ? 'text-brand-600' : ''}>Review</span>
+                            </div>
+
+                            <form onSubmit={handleBooking} className="space-y-6">
+                                
+                                {bookingStep === 1 && (
+                                    <div className="space-y-6 animate-fade-in">
+                                        <h3 className="text-xl font-bold text-slate-800">Contact Details</h3>
+                                        <div>
+                                            <label className="block text-sm font-bold text-slate-700 mb-2">Your Name</label>
+                                            <input 
+                                                type="text" 
+                                                required 
+                                                value={formData.name}
+                                                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 transition-all font-medium text-slate-900"
+                                                placeholder="Enter full name"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-bold text-slate-700 mb-2">Mobile Number</label>
+                                            <input 
+                                                type="tel" 
+                                                required 
+                                                value={formData.phone}
+                                                onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 transition-all font-medium text-slate-900"
+                                                placeholder="10-digit number"
+                                            />
+                                        </div>
                                         <button 
                                             type="button" 
-                                            onClick={() => setIsServicesOpen(!isServicesOpen)}
-                                            className="w-full flex items-center justify-between bg-white border border-slate-200 rounded-xl p-4 text-left focus:outline-none focus:ring-2 focus:ring-brand-500/50 transition-all hover:bg-slate-50 shadow-sm"
+                                            onClick={handleNextStep}
+                                            className="w-full bg-slate-900 text-white font-bold rounded-xl px-6 py-4 hover:bg-slate-800 transition-all shadow-lg flex items-center justify-center gap-2"
                                         >
-                                            <div>
-                                                <span className="block text-sm font-bold text-slate-800">Select Services & Quantity</span>
-                                                <span className="text-xs text-brand-600 font-bold mt-1 inline-block">{formData.items.reduce((acc, item) => acc + item.quantity, 0)} items selected</span>
-                                            </div>
-                                            <svg className={`w-5 h-5 text-slate-500 transition-transform duration-300 ${isServicesOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
-                                            </svg>
+                                            Next Step <ArrowRight size={18} />
                                         </button>
-                                        
-                                        {isServicesOpen && (
-                                            <div className="mt-3 bg-slate-50 border border-slate-200 rounded-xl p-2 sm:p-4 max-h-60 overflow-y-auto space-y-2">
-                                                {isLoadingServices ? (
-                                                    <div className="p-4 text-center text-sm font-bold text-slate-500">Loading...</div>
-                                                ) : dbServices.length === 0 ? (
-                                                    <div className="p-4 text-center text-sm font-bold text-slate-500">No services available</div>
-                                                ) : (
-                                                    dbServices.map((service, idx) => {
-                                                        const cartItem = formData.items.find(item => item.name === service.name);
-                                                        const qty = cartItem ? cartItem.quantity : 0;
-                                                        return (
-                                                            <div key={idx} className="flex items-center justify-between bg-white p-3 rounded-lg border border-slate-100 shadow-sm hover:border-brand-200 transition-colors">
-                                                                <div>
-                                                                    <div className="font-bold text-slate-800 text-sm">{service.name}</div>
-                                                                    <div className="text-xs text-brand-600 font-semibold">₹{service.price}</div>
-                                                                </div>
-                                                                <div className="flex items-center gap-3">
-                                                                    <button type="button" onClick={() => handleQuantityChange(service, -1)} className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-lg transition-colors ${qty > 0 ? 'bg-brand-100 text-brand-600 hover:bg-brand-200' : 'bg-slate-100 text-slate-400 cursor-not-allowed'}`} disabled={qty === 0}>-</button>
-                                                                    <span className="w-4 text-center font-bold text-slate-800">{qty}</span>
-                                                                    <button type="button" onClick={() => handleQuantityChange(service, 1)} className="w-8 h-8 rounded-full bg-brand-100 text-brand-600 hover:bg-brand-200 flex items-center justify-center font-bold text-lg transition-colors">+</button>
-                                                                </div>
-                                                            </div>
-                                                        )
-                                                    })
-                                                )}
-                                            </div>
-                                        )}
                                     </div>
-                                </div>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                    <div>
-                                        <label className="block text-sm font-bold text-slate-700 mb-2">Pick-up Date</label>
-                                        <input 
-                                            type="date" 
-                                            required 
-                                            value={formData.date}
-                                            onChange={(e) => setFormData({...formData, date: e.target.value})}
-                                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 transition-all font-medium text-slate-900"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-bold text-slate-700 mb-2">Pick-up Time</label>
-                                        <select 
-                                            required
-                                            value={formData.time}
-                                            onChange={(e) => setFormData({...formData, time: e.target.value})}
-                                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 transition-all font-medium text-slate-900 appearance-none"
-                                        >
-                                            <option value="" disabled>Select Time</option>
-                                            <option>Morning 9:00 AM - 11:00 AM</option>
-                                            <option>Noon 11:00 AM - 2:00 PM</option>
-                                            <option>Afternoon 2:00 PM - 5:00 PM</option>
-                                            <option>Evening 5:00 PM - 8:00 PM</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-bold text-slate-700 mb-2">Full Address (For Pick-up)</label>
-                                    <textarea 
-                                        required 
-                                        rows="2"
-                                        value={formData.address}
-                                        onChange={(e) => setFormData({...formData, address: e.target.value})}
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 transition-all font-medium text-slate-900 resize-none"
-                                        placeholder="House Number, Street, Area..."
-                                    ></textarea>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-bold text-slate-700 mb-2">Special Instructions (Optional)</label>
-                                    <input 
-                                        type="text" 
-                                        value={formData.instructions}
-                                        onChange={(e) => setFormData({...formData, instructions: e.target.value})}
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 transition-all font-medium text-slate-900"
-                                        placeholder="e.g. regarding stains on clothes..."
-                                    />
-                                </div>
+                                )}
 
-                                <div>
-                                    <label className="block text-sm font-bold text-slate-700 mb-2">Payment Method</label>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        {settings.cashOnDelivery && (
-                                            <label className={`border rounded-xl p-4 flex items-center justify-center gap-2 cursor-pointer transition-all ${formData.paymentMethod === 'Cash on Delivery' ? 'border-brand-500 bg-brand-50 text-brand-700 font-bold' : 'border-slate-200 bg-slate-50 text-slate-600 font-medium hover:bg-slate-100'}`}>
-                                                <input 
-                                                    type="radio" 
-                                                    name="paymentMethod" 
-                                                    value="Cash on Delivery" 
-                                                    className="hidden"
-                                                    checked={formData.paymentMethod === 'Cash on Delivery'}
-                                                    onChange={(e) => setFormData({...formData, paymentMethod: e.target.value})}
-                                                />
-                                                Cash on Delivery
-                                            </label>
-                                        )}
-                                        {settings.upiPaymentEnabled && (
-                                            <label className={`border rounded-xl p-4 flex items-center justify-center gap-2 cursor-pointer transition-all ${formData.paymentMethod === 'UPI' ? 'border-brand-500 bg-brand-50 text-brand-700 font-bold' : 'border-slate-200 bg-slate-50 text-slate-600 font-medium hover:bg-slate-100'}`}>
-                                                <input 
-                                                    type="radio" 
-                                                    name="paymentMethod" 
-                                                    value="UPI" 
-                                                    className="hidden"
-                                                    checked={formData.paymentMethod === 'UPI'}
-                                                    onChange={(e) => setFormData({...formData, paymentMethod: e.target.value})}
-                                                />
-                                                UPI Payment
-                                            </label>
-                                        )}
+                                {bookingStep === 2 && (
+                                    <div className="space-y-6 animate-fade-in">
+                                        <h3 className="text-xl font-bold text-slate-800">Select Services</h3>
+                                        <div className="bg-slate-50 border border-slate-200 rounded-xl p-2 sm:p-4 max-h-[350px] overflow-y-auto space-y-2">
+                                            {isLoadingServices ? (
+                                                <div className="p-4 text-center text-sm font-bold text-slate-500">Loading...</div>
+                                            ) : dbServices.length === 0 ? (
+                                                <div className="p-4 text-center text-sm font-bold text-slate-500">No services available</div>
+                                            ) : (
+                                                dbServices.map((service, idx) => {
+                                                    const cartItem = formData.items.find(item => item.name === service.name);
+                                                    const qty = cartItem ? cartItem.quantity : 0;
+                                                    return (
+                                                        <div key={idx} className="flex items-center justify-between bg-white p-3 rounded-lg border border-slate-100 shadow-sm hover:border-brand-200 transition-colors">
+                                                            <div>
+                                                                <div className="font-bold text-slate-800 text-sm">{service.name}</div>
+                                                                <div className="text-xs text-brand-600 font-semibold">₹{service.price}</div>
+                                                            </div>
+                                                            <div className="flex items-center gap-3">
+                                                                <button type="button" onClick={() => handleQuantityChange(service, -1)} className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-lg transition-colors ${qty > 0 ? 'bg-brand-100 text-brand-600 hover:bg-brand-200' : 'bg-slate-100 text-slate-400 cursor-not-allowed'}`} disabled={qty === 0}>-</button>
+                                                                <span className="w-4 text-center font-bold text-slate-800">{qty}</span>
+                                                                <button type="button" onClick={() => handleQuantityChange(service, 1)} className="w-8 h-8 rounded-full bg-brand-100 text-brand-600 hover:bg-brand-200 flex items-center justify-center font-bold text-lg transition-colors">+</button>
+                                                            </div>
+                                                        </div>
+                                                    )
+                                                })
+                                            )}
+                                        </div>
+                                        <div className="flex gap-4">
+                                            <button 
+                                                type="button" 
+                                                onClick={handlePrevStep}
+                                                className="w-1/3 bg-slate-100 text-slate-600 font-bold rounded-xl px-6 py-4 hover:bg-slate-200 transition-all flex items-center justify-center"
+                                            >
+                                                Back
+                                            </button>
+                                            <button 
+                                                type="button" 
+                                                onClick={handleNextStep}
+                                                className="w-2/3 bg-slate-900 text-white font-bold rounded-xl px-6 py-4 hover:bg-slate-800 transition-all shadow-lg flex items-center justify-center gap-2"
+                                            >
+                                                Next Step <ArrowRight size={18} />
+                                            </button>
+                                        </div>
                                     </div>
-                                    
-                                    {formData.items.length > 0 && (
-                                        <div className="mt-6 bg-brand-50 border border-brand-200 rounded-xl p-4 flex justify-between items-center shadow-sm">
-                                            <div className="font-bold text-brand-800 flex items-center gap-2">
-                                                <span className="bg-brand-200 text-brand-700 px-2 py-0.5 rounded-full text-xs">{formData.items.reduce((s, i) => s + i.quantity, 0)} items</span>
-                                                Total Amount:
+                                )}
+
+                                {bookingStep === 3 && (
+                                    <div className="space-y-6 animate-fade-in">
+                                        <h3 className="text-xl font-bold text-slate-800">Pickup Details</h3>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                            <div>
+                                                <label className="block text-sm font-bold text-slate-700 mb-2">Pick-up Date</label>
+                                                <input 
+                                                    type="date" 
+                                                    required 
+                                                    value={formData.date}
+                                                    onChange={(e) => setFormData({...formData, date: e.target.value})}
+                                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 transition-all font-medium text-slate-900"
+                                                />
                                             </div>
-                                            <div className="text-right">
-                                                {(() => {
-                                                    const baseTotal = formData.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-                                                    const isEligibleForDiscount = formData.paymentMethod === 'UPI';
-                                                    if (isEligibleForDiscount) {
-                                                        const finalTotal = Math.round(baseTotal * 0.9);
-                                                        return (
-                                                            <>
-                                                                <div className="text-sm text-slate-400 line-through">₹{baseTotal}</div>
-                                                                <div className="text-2xl font-extrabold text-emerald-600 flex items-center gap-2">
-                                                                    ₹{finalTotal} <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full whitespace-nowrap">10% OFF</span>
-                                                                </div>
-                                                            </>
-                                                        );
-                                                    }
-                                                    return <div className="text-2xl font-extrabold text-brand-600">₹{baseTotal}</div>;
-                                                })()}
+                                            <div>
+                                                <label className="block text-sm font-bold text-slate-700 mb-2">Pick-up Time</label>
+                                                <select 
+                                                    required
+                                                    value={formData.time}
+                                                    onChange={(e) => setFormData({...formData, time: e.target.value})}
+                                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 transition-all font-medium text-slate-900 appearance-none"
+                                                >
+                                                    <option value="" disabled>Select Time</option>
+                                                    <option>Morning 9:00 AM - 11:00 AM</option>
+                                                    <option>Noon 11:00 AM - 2:00 PM</option>
+                                                    <option>Afternoon 2:00 PM - 5:00 PM</option>
+                                                    <option>Evening 5:00 PM - 8:00 PM</option>
+                                                </select>
                                             </div>
                                         </div>
-                                    )}
+                                        <div>
+                                            <label className="block text-sm font-bold text-slate-700 mb-2">Full Address (For Pick-up)</label>
+                                            <textarea 
+                                                required 
+                                                rows="2"
+                                                value={formData.address}
+                                                onChange={(e) => setFormData({...formData, address: e.target.value})}
+                                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 transition-all font-medium text-slate-900 resize-none"
+                                                placeholder="House Number, Street, Area..."
+                                            ></textarea>
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-bold text-slate-700 mb-2">Special Instructions (Optional)</label>
+                                            <input 
+                                                type="text" 
+                                                value={formData.instructions}
+                                                onChange={(e) => setFormData({...formData, instructions: e.target.value})}
+                                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 transition-all font-medium text-slate-900"
+                                                placeholder="e.g. regarding stains on clothes..."
+                                            />
+                                        </div>
+                                        <div className="flex gap-4">
+                                            <button 
+                                                type="button" 
+                                                onClick={handlePrevStep}
+                                                className="w-1/3 bg-slate-100 text-slate-600 font-bold rounded-xl px-6 py-4 hover:bg-slate-200 transition-all flex items-center justify-center"
+                                            >
+                                                Back
+                                            </button>
+                                            <button 
+                                                type="button" 
+                                                onClick={handleNextStep}
+                                                className="w-2/3 bg-slate-900 text-white font-bold rounded-xl px-6 py-4 hover:bg-slate-800 transition-all shadow-lg flex items-center justify-center gap-2"
+                                            >
+                                                Next Step <ArrowRight size={18} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
 
-                                    {formData.paymentMethod === 'UPI' && (
-                                        <div className="mt-4 p-5 rounded-xl bg-blue-50 border border-blue-100 flex flex-col items-center justify-center text-center">
-                                            {settings.qrCodeImage && (
-                                                <div className="w-40 h-40 bg-white p-2 rounded-xl shadow-sm border border-blue-200 mb-4">
-                                                    <img src={settings.qrCodeImage} alt="Pay via UPI" className="w-full h-full object-contain" />
+                                {bookingStep === 4 && (
+                                    <div className="space-y-6 animate-fade-in">
+                                        <h3 className="text-xl font-bold text-slate-800">Payment & Review</h3>
+                                        <div>
+                                            <label className="block text-sm font-bold text-slate-700 mb-2">Payment Method</label>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                {settings.cashOnDelivery && (
+                                                    <label className={`border rounded-xl p-4 flex items-center justify-center gap-2 cursor-pointer transition-all ${formData.paymentMethod === 'Cash on Delivery' ? 'border-brand-500 bg-brand-50 text-brand-700 font-bold' : 'border-slate-200 bg-slate-50 text-slate-600 font-medium hover:bg-slate-100'}`}>
+                                                        <input 
+                                                            type="radio" 
+                                                            name="paymentMethod" 
+                                                            value="Cash on Delivery" 
+                                                            className="hidden"
+                                                            checked={formData.paymentMethod === 'Cash on Delivery'}
+                                                            onChange={(e) => setFormData({...formData, paymentMethod: e.target.value})}
+                                                        />
+                                                        Cash on Delivery
+                                                    </label>
+                                                )}
+                                                {settings.upiPaymentEnabled && (
+                                                    <label className={`border rounded-xl p-4 flex items-center justify-center gap-2 cursor-pointer transition-all ${formData.paymentMethod === 'UPI' ? 'border-brand-500 bg-brand-50 text-brand-700 font-bold' : 'border-slate-200 bg-slate-50 text-slate-600 font-medium hover:bg-slate-100'}`}>
+                                                        <input 
+                                                            type="radio" 
+                                                            name="paymentMethod" 
+                                                            value="UPI" 
+                                                            className="hidden"
+                                                            checked={formData.paymentMethod === 'UPI'}
+                                                            onChange={(e) => setFormData({...formData, paymentMethod: e.target.value})}
+                                                        />
+                                                        UPI Payment
+                                                    </label>
+                                                )}
+                                            </div>
+                                            
+                                            {formData.items.length > 0 && (
+                                                <div className="mt-6 bg-brand-50 border border-brand-200 rounded-xl p-4 flex justify-between items-center shadow-sm">
+                                                    <div className="font-bold text-brand-800 flex items-center gap-2">
+                                                        <span className="bg-brand-200 text-brand-700 px-2 py-0.5 rounded-full text-xs">{formData.items.reduce((s, i) => s + i.quantity, 0)} items</span>
+                                                        Total Amount:
+                                                    </div>
+                                                    <div className="text-right">
+                                                        {(() => {
+                                                            const baseTotal = formData.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                                                            const isEligibleForDiscount = formData.paymentMethod === 'UPI';
+                                                            if (isEligibleForDiscount) {
+                                                                const finalTotal = Math.round(baseTotal * 0.9);
+                                                                return (
+                                                                    <>
+                                                                        <div className="text-sm text-slate-400 line-through">₹{baseTotal}</div>
+                                                                        <div className="text-2xl font-extrabold text-emerald-600 flex items-center gap-2">
+                                                                            ₹{finalTotal} <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full whitespace-nowrap">10% OFF</span>
+                                                                        </div>
+                                                                    </>
+                                                                );
+                                                            }
+                                                            return <div className="text-2xl font-extrabold text-brand-600">₹{baseTotal}</div>;
+                                                        })()}
+                                                    </div>
                                                 </div>
                                             )}
-                                            <p className="text-sm font-medium text-blue-800 mb-2">Please pay to the following UPI ID:</p>
-                                            <div className="bg-white px-4 py-2 rounded-lg font-bold text-lg text-slate-800 shadow-sm border border-slate-200 mb-2 select-all">
-                                                {settings.upiId || 'Not Setup Yet'}
-                                            </div>
-                                            <p className="text-xs text-blue-600 mt-2">Scan the QR code or copy the UPI ID above. Our delivery boy will verify the payment at pickup.</p>
-                                            
-                                            <div className="mt-6 w-full text-left">
-                                                <label className="block text-sm font-bold text-slate-700 mb-2">Upload Payment Screenshot *</label>
-                                                <input 
-                                                    type="file" 
-                                                    accept="image/*" 
-                                                    onChange={handleFileChange}
-                                                    required={formData.paymentMethod === 'UPI'}
-                                                    className="w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-700 file:cursor-pointer cursor-pointer border border-blue-200 rounded-xl bg-white focus:outline-none"
-                                                />
-                                                {paymentScreenshot && (
-                                                    <div className="mt-3 text-xs font-bold text-emerald-600 flex items-center gap-1">
-                                                        <CheckCircle2 size={14} /> Screenshot attached successfully
+
+                                            {formData.paymentMethod === 'UPI' && (
+                                                <div className="mt-4 p-5 rounded-xl bg-blue-50 border border-blue-100 flex flex-col items-center justify-center text-center">
+                                                    {settings.qrCodeImage && (
+                                                        <div className="w-40 h-40 bg-white p-2 rounded-xl shadow-sm border border-blue-200 mb-4">
+                                                            <img src={settings.qrCodeImage} alt="Pay via UPI" className="w-full h-full object-contain" />
+                                                        </div>
+                                                    )}
+                                                    <p className="text-sm font-medium text-blue-800 mb-2">Please pay to the following UPI ID:</p>
+                                                    <div className="bg-white px-4 py-2 rounded-lg font-bold text-lg text-slate-800 shadow-sm border border-slate-200 mb-2 select-all">
+                                                        {settings.upiId || 'Not Setup Yet'}
                                                     </div>
-                                                )}
-                                            </div>
+                                                    <p className="text-xs text-blue-600 mt-2">Scan the QR code or copy the UPI ID above. Our delivery boy will verify the payment at pickup.</p>
+                                                    
+                                                    <div className="mt-6 w-full text-left">
+                                                        <label className="block text-sm font-bold text-slate-700 mb-2">Upload Payment Screenshot *</label>
+                                                        <input 
+                                                            type="file" 
+                                                            accept="image/*" 
+                                                            onChange={handleFileChange}
+                                                            required={formData.paymentMethod === 'UPI'}
+                                                            className="w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-700 file:cursor-pointer cursor-pointer border border-blue-200 rounded-xl bg-white focus:outline-none"
+                                                        />
+                                                        {paymentScreenshot && (
+                                                            <div className="mt-3 text-xs font-bold text-emerald-600 flex items-center gap-1">
+                                                                <CheckCircle2 size={14} /> Screenshot attached successfully
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
-                                    )}
-                                </div>
-                                
-                                <button 
-                                    type="submit" 
-                                    disabled={isSubmitting}
-                                    className="w-full bg-brand-600 text-white font-extrabold rounded-xl px-6 py-4 flex items-center justify-center gap-2 hover:bg-brand-700 transition-all shadow-xl hover:shadow-brand-500/30 group disabled:opacity-70"
-                                >
-                                    {isSubmitting ? (
-                                        <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                                    ) : (
-                                        <>
-                                            <CheckCircle2 size={20} className="group-hover:scale-110 transition-transform" />
-                                            Confirm Booking
-                                        </>
-                                    )}
-                                </button>
+                                        
+                                        <div className="flex gap-4">
+                                            <button 
+                                                type="button" 
+                                                onClick={handlePrevStep}
+                                                className="w-1/3 bg-slate-100 text-slate-600 font-bold rounded-xl px-6 py-4 hover:bg-slate-200 transition-all flex items-center justify-center"
+                                            >
+                                                Back
+                                            </button>
+                                            <button 
+                                                type="submit" 
+                                                disabled={isSubmitting}
+                                                className="w-2/3 bg-brand-600 text-white font-extrabold rounded-xl px-6 py-4 flex items-center justify-center gap-2 hover:bg-brand-700 transition-all shadow-xl hover:shadow-brand-500/30 group disabled:opacity-70"
+                                            >
+                                                {isSubmitting ? (
+                                                    <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                                ) : (
+                                                    <>
+                                                        <CheckCircle2 size={20} className="group-hover:scale-110 transition-transform" />
+                                                        Confirm Booking
+                                                    </>
+                                                )}
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
                             </form>
                         </motion.div>
                     </div>

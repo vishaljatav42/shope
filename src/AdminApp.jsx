@@ -5,6 +5,7 @@ import Dashboard from './admin-components/Dashboard';
 import ServicesManager from './admin-components/ServicesManager';
 import SettingsManager from './admin-components/SettingsManager';
 import CustomersManager from './admin-components/CustomersManager';
+import NotificationsManager from './admin-components/NotificationsManager';
 import Login from './admin-components/Login';
 import './admin.css';
 

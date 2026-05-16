@@ -28,6 +28,12 @@ const settingSchema = new mongoose.Schema({
     whatsappAlerts: { type: Boolean, default: true },
     smsAlerts: { type: Boolean, default: false },
     emailAlerts: { type: Boolean, default: false },
+    
+    // Notification Templates
+    templatePickupConfirmed: { type: String, default: 'Hi [CustomerName], your laundry order #[OrderID] has been picked up successfully! We will start washing it soon.' },
+    templateWashingStarted: { type: String, default: 'Hi [CustomerName], great news! Your clothes for order #[OrderID] are now being washed with premium care.' },
+    templateOutForDelivery: { type: String, default: 'Hi [CustomerName], your fresh and clean laundry (Order #[OrderID]) is out for delivery and will reach you shortly!' },
+    templateDelivered: { type: String, default: 'Hi [CustomerName], your laundry order #[OrderID] has been delivered. Thank you for choosing Clean & Care!' },
 
     // Advanced Business Details
     gstNumber: { type: String, default: '' },
