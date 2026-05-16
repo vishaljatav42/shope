@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Shirt, Sparkles, Sofa, Footprints, Phone, MessageCircle, MapPin, Droplets, ArrowRight, CheckCircle2, Clock, X, Users, Settings, CalendarCheck } from 'lucide-react';
+import { Shirt, Sparkles, Sofa, Footprints, Phone, MessageCircle, MapPin, Droplets, ArrowRight, CheckCircle2, Clock, X, Users, Settings, CalendarCheck, Edit2, Save } from 'lucide-react';
 
 import { Routes, Route } from 'react-router-dom';
 import AdminApp from './AdminApp';
@@ -40,6 +40,8 @@ const MainWebsite = () => {
     const [showProfileModal, setShowProfileModal] = useState(false);
     const [customerProfileData, setCustomerProfileData] = useState(null);
     const [loadingProfile, setLoadingProfile] = useState(false);
+    const [isEditingProfile, setIsEditingProfile] = useState(false);
+    const [editProfileForm, setEditProfileForm] = useState({ phone: '', address: '' });
     
     // Booking Form State
     const [bookingStep, setBookingStep] = useState(1);
@@ -63,6 +65,29 @@ const MainWebsite = () => {
             alert("Failed to load profile data.");
         } finally {
             setLoadingProfile(false);
+        }
+    };
+
+    const handleSaveProfile = async () => {
+        try {
+            const res = await fetch(`http://localhost:8000/api/customers/${customer.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    phone: editProfileForm.phone,
+                    'address.fullAddress': editProfileForm.address
+                })
+            });
+            if (res.ok) {
+                const updatedCustomer = await res.json();
+                setCustomerProfileData({ ...customerProfileData, phone: updatedCustomer.phone, address: updatedCustomer.address });
+                setIsEditingProfile(false);
+            } else {
+                alert('Failed to update profile');
+            }
+        } catch (error) {
+            console.error('Error updating profile:', error);
+            alert('Failed to connect to server');
         }
     };
 
@@ -1253,17 +1278,42 @@ const MainWebsite = () => {
                         <div className="grid md:grid-cols-3 gap-8">
                             <div className="md:col-span-1 space-y-6">
                                 <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
-                                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4 flex items-center gap-2">
-                                        <Users size={14} /> Basic Details
-                                    </h4>
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+                                            <Users size={14} /> Basic Details
+                                        </h4>
+                                        {!isEditingProfile ? (
+                                            <button onClick={() => {
+                                                setEditProfileForm({
+                                                    phone: customerProfileData.phone || customerProfileData.bookings?.[0]?.phone || '',
+                                                    address: customerProfileData.address?.fullAddress || customerProfileData.bookings?.[0]?.address || ''
+                                                });
+                                                setIsEditingProfile(true);
+                                            }} className="text-brand-600 hover:bg-brand-50 p-1.5 rounded-md transition-colors flex items-center gap-1 text-[10px] font-bold">
+                                                <Edit2 size={12} /> Edit
+                                            </button>
+                                        ) : (
+                                            <button onClick={handleSaveProfile} className="text-emerald-600 hover:bg-emerald-50 p-1.5 rounded-md transition-colors flex items-center gap-1 text-[10px] font-bold">
+                                                <Save size={12} /> Save
+                                            </button>
+                                        )}
+                                    </div>
                                     <div className="space-y-3">
                                         <div>
                                             <p className="text-xs text-slate-500 font-medium">Phone</p>
-                                            <p className="text-sm font-bold text-slate-800">{customerProfileData.phone || customerProfileData.bookings?.[0]?.phone || 'Not added'}</p>
+                                            {!isEditingProfile ? (
+                                                <p className="text-sm font-bold text-slate-800">{customerProfileData.phone || customerProfileData.bookings?.[0]?.phone || 'Not added'}</p>
+                                            ) : (
+                                                <input type="tel" value={editProfileForm.phone} onChange={(e) => setEditProfileForm({...editProfileForm, phone: e.target.value})} className="w-full mt-1 text-sm bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 outline-none focus:ring-1 focus:ring-brand-500 font-medium text-slate-900" placeholder="10-digit number" />
+                                            )}
                                         </div>
                                         <div>
                                             <p className="text-xs text-slate-500 font-medium">Default Address</p>
-                                            <p className="text-sm font-bold text-slate-800 break-words">{customerProfileData.address?.fullAddress || customerProfileData.bookings?.[0]?.address || 'Not added'}</p>
+                                            {!isEditingProfile ? (
+                                                <p className="text-sm font-bold text-slate-800 break-words">{customerProfileData.address?.fullAddress || customerProfileData.bookings?.[0]?.address || 'Not added'}</p>
+                                            ) : (
+                                                <textarea value={editProfileForm.address} onChange={(e) => setEditProfileForm({...editProfileForm, address: e.target.value})} className="w-full mt-1 text-sm bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 outline-none focus:ring-1 focus:ring-brand-500 font-medium text-slate-900 resize-none" rows="2" placeholder="Full address..." />
+                                            )}
                                         </div>
                                     </div>
                                 </div>
