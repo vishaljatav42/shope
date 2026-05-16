@@ -42,6 +42,11 @@ const customerSchema = new mongoose.Schema({
         enum: ['Active', 'Blocked', 'VIP', 'Regular'],
         default: 'Active'
     },
+    membership: {
+        type: String,
+        enum: ['Regular', 'Monthly Package', 'VIP'],
+        default: 'Regular'
+    },
     otp: {
         type: String,
         default: null

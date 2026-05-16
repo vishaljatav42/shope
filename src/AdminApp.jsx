@@ -50,13 +50,14 @@ function AdminApp() {
         <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} onLogout={handleLogout} />
         <main className="main-content">
           {activeTab === 'dashboard' && <Dashboard />}
+          {activeTab === 'bookings' && <Dashboard />}
           {activeTab === 'customers' && <CustomersManager />}
           {activeTab === 'services' && <ServicesManager />}
           {activeTab === 'settings' && <SettingsManager onThemeChange={setIsDarkMode} />}
-          {activeTab !== 'dashboard' && activeTab !== 'customers' && activeTab !== 'services' && activeTab !== 'settings' && (
+          {activeTab !== 'dashboard' && activeTab !== 'bookings' && activeTab !== 'customers' && activeTab !== 'services' && activeTab !== 'settings' && (
             <div className="empty-state animate-fade-in">
-              <h2>Feature Coming Soon</h2>
-              <p>This section is under development.</p>
+              <h2>Module In Development</h2>
+              <p>This premium feature is scheduled for Phase 3 of the system upgrade.</p>
             </div>
           )}
         </main>

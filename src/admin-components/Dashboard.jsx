@@ -48,6 +48,21 @@ const Dashboard = () => {
     return false
   }).length
 
+  const handlePaymentStatusChange = async (id, newPaymentStatus) => {
+    try {
+      const res = await fetch(`http://localhost:8000/api/bookings/${id}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paymentStatus: newPaymentStatus })
+      })
+      if (res.ok) {
+        setBookings(bookings.map(b => b._id === id ? { ...b, paymentStatus: newPaymentStatus } : b))
+      }
+    } catch (error) {
+      console.error('Failed to update payment status', error)
+    }
+  }
+
   return (
     <div className="animate-fade-in relative">
       <div className="header">
@@ -176,6 +191,16 @@ const Dashboard = () => {
                         {booking.totalAmount > 0 && (
                           <span className="text-sm font-bold text-slate-800 mt-1">₹{booking.totalAmount}</span>
                         )}
+                        <select 
+                          value={booking.paymentStatus || 'Pending'}
+                          onChange={(e) => handlePaymentStatusChange(booking._id, e.target.value)}
+                          className={`mt-1 text-xs font-bold px-2 py-1 rounded border outline-none ${
+                            booking.paymentStatus === 'Paid' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-amber-50 text-amber-600 border-amber-200'
+                          }`}
+                        >
+                          <option value="Pending">Payment Pending</option>
+                          <option value="Paid">Payment Paid</option>
+                        </select>
                         {booking.paymentScreenshot && (
                           <button 
                             onClick={() => setSelectedReceipt(booking.paymentScreenshot)}
@@ -193,14 +218,18 @@ const Dashboard = () => {
                         className={`badge status-select ${
                           booking.status === 'Completed' ? 'status-completed' : 
                           booking.status === 'Cancelled' ? 'status-cancelled' : 
-                          booking.status === 'Confirmed' ? 'status-confirmed' : 'status-pending'
+                          ['Confirmed', 'Picked Up', 'Washing', 'Ironing', 'Out For Delivery'].includes(booking.status) ? 'status-confirmed' : 'status-pending'
                         }`}
                         style={{ outline: 'none', cursor: 'pointer' }}
                       >
-                        <option value="Pending" style={{ color: 'initial', backgroundColor: 'initial' }}>Pending</option>
-                        <option value="Confirmed" style={{ color: 'initial', backgroundColor: 'initial' }}>Accept</option>
-                        <option value="Completed" style={{ color: 'initial', backgroundColor: 'initial' }}>Complete</option>
-                        <option value="Cancelled" style={{ color: 'initial', backgroundColor: 'initial' }}>Cancel</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Confirmed">Confirmed</option>
+                        <option value="Picked Up">Picked Up</option>
+                        <option value="Washing">Washing</option>
+                        <option value="Ironing">Ironing</option>
+                        <option value="Out For Delivery">Out For Delivery</option>
+                        <option value="Completed">Completed</option>
+                        <option value="Cancelled">Cancelled</option>
                       </select>
                     </td>
                   </tr>

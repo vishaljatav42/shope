@@ -1,12 +1,17 @@
 import React from 'react'
-import { LayoutDashboard, Users, Settings, CalendarCheck, Droplets, Tag } from 'lucide-react'
+import { LayoutDashboard, Users, Settings, CalendarCheck, Droplets, Tag, Truck, CreditCard, BarChart3, Ticket, Bell } from 'lucide-react'
 
 const Sidebar = ({ activeTab, setActiveTab, onLogout }) => {
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'bookings', label: 'All Bookings', icon: CalendarCheck },
-    { id: 'services', label: 'Services', icon: Tag },
     { id: 'customers', label: 'Customers', icon: Users },
+    { id: 'services', label: 'Services', icon: Tag },
+    { id: 'staff', label: 'Staff & Riders', icon: Truck },
+    { id: 'payments', label: 'Payments', icon: CreditCard },
+    { id: 'reports', label: 'Reports', icon: BarChart3 },
+    { id: 'coupons', label: 'Coupons', icon: Ticket },
+    { id: 'notifications', label: 'Notifications', icon: Bell },
     { id: 'settings', label: 'Settings', icon: Settings },
   ]
 

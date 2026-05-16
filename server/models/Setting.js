@@ -35,9 +35,31 @@ const settingSchema = new mongoose.Schema({
     facebook: { type: String, default: '' },
 
     // Operational Settings
-    openingTime: { type: String, default: '09:00 AM' },
-    closingTime: { type: String, default: '08:00 PM' },
-    workingDays: { type: String, default: 'Monday - Saturday' },
+    openingTime: { type: String, default: '08:00 AM' },
+    closingTime: { type: String, default: '10:00 PM' },
+    
+    // Pickup & Delivery Timings
+    pickupStartTime: { type: String, default: '09:00 AM' },
+    pickupEndTime: { type: String, default: '07:00 PM' },
+    deliveryStartTime: { type: String, default: '11:00 AM' },
+    deliveryEndTime: { type: String, default: '09:00 PM' },
+    
+    // Express & Emergency Services
+    expressDeliveryEnabled: { type: Boolean, default: false },
+    sameDayDeliveryEnabled: { type: Boolean, default: false },
+    
+    // Closed Days & Holiday Mode
+    closedDays: { type: [String], default: ['Sunday'] },
+    holidayMode: { type: Boolean, default: false },
+    
+    // Booking Rules
+    slotDuration: { type: String, default: '1 hour' },
+    lastBookingTime: { type: String, default: '08:00 PM' },
+    autoAcceptOrders: { type: Boolean, default: true },
+    minimumNoticeHours: { type: Number, default: 2 },
+    
+    // Service Areas
+    serviceAreas: { type: [String], default: [] },
 
     // Theme Settings
     darkMode: { type: Boolean, default: false },

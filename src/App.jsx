@@ -1084,7 +1084,16 @@ const MainWebsite = () => {
                                 {customerProfileData.email[0].toUpperCase()}
                             </div>
                             <div>
-                                <h3 className="text-2xl font-bold">{customerProfileData.name || 'Welcome Back!'}</h3>
+                                <div className="flex items-center gap-3">
+                                    <h3 className="text-2xl font-bold">{customerProfileData.name || 'Welcome Back!'}</h3>
+                                    {customerProfileData.membership && customerProfileData.membership !== 'Regular' && (
+                                        <span className={`text-xs font-bold px-2 py-1 rounded border ${
+                                            customerProfileData.membership === 'VIP' ? 'bg-amber-400 text-amber-900 border-amber-300' : 'bg-blue-400 text-blue-900 border-blue-300'
+                                        }`}>
+                                            {customerProfileData.membership}
+                                        </span>
+                                    )}
+                                </div>
                                 <p className="text-brand-100">{customerProfileData.email}</p>
                             </div>
                         </div>
@@ -1105,6 +1114,26 @@ const MainWebsite = () => {
                                         <div>
                                             <p className="text-xs text-slate-500 font-medium">Default Address</p>
                                             <p className="text-sm font-bold text-slate-800 break-words">{customerProfileData.address?.fullAddress || 'Not added'}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+                                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4 flex items-center gap-2">
+                                        <Clock size={14} /> Payment Summary
+                                    </h4>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <p className="text-xs text-slate-500 font-medium">Total Paid</p>
+                                            <p className="text-lg font-bold text-emerald-600">
+                                                ₹{customerProfileData.bookings?.filter(b => b.paymentStatus === 'Paid' && b.status !== 'Cancelled').reduce((sum, b) => sum + (b.totalAmount || 0), 0) || 0}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-slate-500 font-medium">Pending</p>
+                                            <p className="text-lg font-bold text-rose-600">
+                                                ₹{customerProfileData.bookings?.filter(b => b.paymentStatus === 'Pending' && b.status !== 'Cancelled').reduce((sum, b) => sum + (b.totalAmount || 0), 0) || 0}
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
@@ -1144,9 +1173,29 @@ const MainWebsite = () => {
                                                     <span className={`text-xs font-bold px-3 py-1.5 rounded-full ${
                                                         booking.status === 'Completed' ? 'bg-emerald-100 text-emerald-700' :
                                                         booking.status === 'Cancelled' ? 'bg-rose-100 text-rose-700' :
-                                                        'bg-amber-100 text-amber-700'
+                                                        'bg-brand-100 text-brand-700'
                                                     }`}>{booking.status}</span>
                                                 </div>
+                                                
+                                                {!['Completed', 'Cancelled'].includes(booking.status) && (
+                                                    <div className="mb-6 relative">
+                                                        <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-slate-100">
+                                                            <div style={{ width: `${
+                                                                booking.status === 'Pending' ? '15%' :
+                                                                booking.status === 'Confirmed' ? '30%' :
+                                                                booking.status === 'Picked Up' ? '50%' :
+                                                                booking.status === 'Washing' ? '65%' :
+                                                                booking.status === 'Ironing' ? '80%' :
+                                                                booking.status === 'Out For Delivery' ? '95%' : '0%'
+                                                            }` }} className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-brand-500 transition-all duration-500"></div>
+                                                        </div>
+                                                        <div className="flex justify-between text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
+                                                            <span className={['Pending', 'Confirmed', 'Picked Up', 'Washing', 'Ironing', 'Out For Delivery'].includes(booking.status) ? 'text-brand-600' : ''}>Picked Up</span>
+                                                            <span className={['Washing', 'Ironing', 'Out For Delivery'].includes(booking.status) ? 'text-brand-600' : ''}>Washing</span>
+                                                            <span className={['Out For Delivery'].includes(booking.status) ? 'text-brand-600' : ''}>Out For Delivery</span>
+                                                        </div>
+                                                    </div>
+                                                )}
                                                 <div className="flex flex-wrap gap-2 mb-4">
                                                     {booking.items?.map((item, i) => (
                                                         <span key={i} className="text-xs font-medium text-slate-600 bg-slate-50 border border-slate-200 px-2.5 py-1.5 rounded-lg">

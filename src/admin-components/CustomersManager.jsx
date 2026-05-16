@@ -77,20 +77,35 @@ const CustomersManager = () => {
                                 <h3 className="text-xl font-extrabold text-slate-900">{selectedCustomer.name || 'No Name Set'}</h3>
                                 <p className="text-slate-500 text-sm font-medium">{selectedCustomer.email}</p>
                                 
-                                <select 
-                                    value={selectedCustomer.status || 'Active'}
-                                    onChange={(e) => updateCustomerField('status', e.target.value)}
-                                    className={`mt-3 text-xs font-bold px-3 py-1 rounded-full border outline-none ${
-                                        selectedCustomer.status === 'VIP' ? 'bg-amber-50 text-amber-600 border-amber-200' :
-                                        selectedCustomer.status === 'Blocked' ? 'bg-red-50 text-red-600 border-red-200' :
-                                        'bg-emerald-50 text-emerald-600 border-emerald-200'
-                                    }`}
-                                >
-                                    <option value="Active">Active</option>
-                                    <option value="Regular">Regular</option>
-                                    <option value="VIP">VIP</option>
-                                    <option value="Blocked">Blocked</option>
-                                </select>
+                                <div className="flex gap-2 mt-3">
+                                    <select 
+                                        value={selectedCustomer.status || 'Active'}
+                                        onChange={(e) => updateCustomerField('status', e.target.value)}
+                                        className={`text-xs font-bold px-3 py-1 rounded-full border outline-none ${
+                                            selectedCustomer.status === 'VIP' ? 'bg-amber-50 text-amber-600 border-amber-200' :
+                                            selectedCustomer.status === 'Blocked' ? 'bg-red-50 text-red-600 border-red-200' :
+                                            'bg-emerald-50 text-emerald-600 border-emerald-200'
+                                        }`}
+                                    >
+                                        <option value="Active">Active</option>
+                                        <option value="Regular">Regular</option>
+                                        <option value="VIP">VIP</option>
+                                        <option value="Blocked">Blocked</option>
+                                    </select>
+                                    <select 
+                                        value={selectedCustomer.membership || 'Regular'}
+                                        onChange={(e) => updateCustomerField('membership', e.target.value)}
+                                        className={`text-xs font-bold px-3 py-1 rounded-full border outline-none ${
+                                            selectedCustomer.membership === 'VIP' ? 'bg-purple-50 text-purple-600 border-purple-200' :
+                                            selectedCustomer.membership === 'Monthly Package' ? 'bg-blue-50 text-blue-600 border-blue-200' :
+                                            'bg-slate-50 text-slate-600 border-slate-200'
+                                        }`}
+                                    >
+                                        <option value="Regular">Regular</option>
+                                        <option value="Monthly Package">Monthly Package</option>
+                                        <option value="VIP">VIP</option>
+                                    </select>
+                                </div>
                             </div>
 
                             <div className="space-y-4">
@@ -110,16 +125,23 @@ const CustomersManager = () => {
                                     </div>
                                 </div>
                                 <div className="pt-2">
-                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Lifetime Stats</p>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div className="bg-slate-50 rounded-xl p-3 border border-slate-100 text-center">
-                                            <div className="text-2xl font-extrabold text-brand-600">{selectedCustomer.stats?.totalOrders || 0}</div>
-                                            <div className="text-xs font-medium text-slate-500">Orders</div>
+                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Financial Stats</p>
+                                    <div className="grid grid-cols-2 gap-3 mb-3">
+                                        <div className="bg-emerald-50 rounded-xl p-3 border border-emerald-100 text-center">
+                                            <div className="text-2xl font-extrabold text-emerald-600">
+                                                ₹{selectedCustomer.bookings?.filter(b => b.paymentStatus === 'Paid' && b.status !== 'Cancelled').reduce((sum, b) => sum + (b.totalAmount || 0), 0) || 0}
+                                            </div>
+                                            <div className="text-xs font-medium text-emerald-700">Total Paid</div>
                                         </div>
-                                        <div className="bg-slate-50 rounded-xl p-3 border border-slate-100 text-center">
-                                            <div className="text-2xl font-extrabold text-brand-600">₹{selectedCustomer.stats?.totalSpent || 0}</div>
-                                            <div className="text-xs font-medium text-slate-500">Spent</div>
+                                        <div className="bg-rose-50 rounded-xl p-3 border border-rose-100 text-center">
+                                            <div className="text-2xl font-extrabold text-rose-600">
+                                                ₹{selectedCustomer.bookings?.filter(b => b.paymentStatus === 'Pending' && b.status !== 'Cancelled').reduce((sum, b) => sum + (b.totalAmount || 0), 0) || 0}
+                                            </div>
+                                            <div className="text-xs font-medium text-rose-700">Pending Amount</div>
                                         </div>
+                                    </div>
+                                    <div className="bg-slate-50 rounded-xl p-3 border border-slate-100 text-center">
+                                        <div className="text-xl font-bold text-slate-700">{selectedCustomer.stats?.totalOrders || 0} Total Orders</div>
                                     </div>
                                 </div>
                             </div>

@@ -47,8 +47,7 @@ app.post('/api/bookings', async (req, res) => {
 app.put('/api/bookings/:id/status', async (req, res) => {
     try {
         const { id } = req.params;
-        const { status } = req.body;
-        const updatedBooking = await Booking.findByIdAndUpdate(id, { status }, { new: true });
+        const updatedBooking = await Booking.findByIdAndUpdate(id, req.body, { new: true });
         res.status(200).json({ success: true, data: updatedBooking });
     } catch (error) {
         res.status(500).json({ error: 'Failed to update booking status' });
@@ -230,7 +229,21 @@ app.post('/api/auth/verify-otp', async (req, res) => {
         // Generate Token
         const token = jwt.sign({ id: customer._id, email: customer.email }, JWT_SECRET, { expiresIn: '7d' });
 
-        res.status(200).json({ success: true, token, customer: { id: customer._id, email: customer.email, name: customer.name, phone: customer.phone } });
+        // Check if this is their first order
+        const bookingCount = await Booking.countDocuments({ email: customer.email });
+        const isFirstOrder = bookingCount === 0;
+
+        res.status(200).json({ 
+            success: true, 
+            token, 
+            customer: { 
+                id: customer._id, 
+                email: customer.email, 
+                name: customer.name, 
+                phone: customer.phone,
+                isFirstOrder
+            } 
+        });
     } catch (error) {
         console.error('Verify OTP error:', error);
         res.status(500).json({ error: 'Failed to verify OTP' });

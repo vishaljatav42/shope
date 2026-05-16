@@ -7,7 +7,13 @@ const SettingsManager = ({ onThemeChange }) => {
   const [settings, setSettings] = useState({
     businessName: '', tagline: '', address: '',
     gstNumber: '', instagram: '', facebook: '',
-    openingTime: '09:00 AM', closingTime: '08:00 PM', workingDays: 'Monday - Saturday',
+    openingTime: '08:00 AM', closingTime: '10:00 PM',
+    pickupStartTime: '09:00 AM', pickupEndTime: '07:00 PM',
+    deliveryStartTime: '11:00 AM', deliveryEndTime: '09:00 PM',
+    expressDeliveryEnabled: false, sameDayDeliveryEnabled: false,
+    closedDays: ['Sunday'], holidayMode: false,
+    slotDuration: '1 hour', lastBookingTime: '08:00 PM', autoAcceptOrders: true, minimumNoticeHours: 2,
+    serviceAreas: [],
     phone: '', whatsapp: '', email: '', mapLocation: '',
     homeDelivery: true, minimumOrderAmount: 0, pickupCharges: 0, expressDeliveryCharges: 100,
     cashOnDelivery: true, upiPaymentEnabled: true, upiId: '',
@@ -28,7 +34,11 @@ const SettingsManager = ({ onThemeChange }) => {
         const response = await axios.get('http://localhost:8000/api/settings');
         if (response.data) {
           const { qrCodeImage: fetchedQr, ...restSettings } = response.data;
-          setSettings(prev => ({ ...prev, ...restSettings }));
+          setSettings(prev => ({ 
+            ...prev, 
+            ...restSettings,
+            serviceAreasRaw: restSettings.serviceAreas ? restSettings.serviceAreas.join(', ') : ''
+          }));
           if (fetchedQr) setQrCodeImage(fetchedQr);
           if (onThemeChange && typeof restSettings.darkMode !== 'undefined') {
             onThemeChange(restSettings.darkMode);
@@ -57,6 +67,22 @@ const SettingsManager = ({ onThemeChange }) => {
     }
   };
 
+  const toggleClosedDay = (day) => {
+    setSettings(prev => ({
+      ...prev,
+      closedDays: prev.closedDays.includes(day)
+        ? prev.closedDays.filter(d => d !== day)
+        : [...prev.closedDays, day]
+    }));
+  };
+
+  const handleAreasChange = (e) => {
+    // Keep it as a string for the input value, but convert to array on save/change.
+    // We'll actually just use a simple string input and parse it.
+    const val = e.target.value;
+    setSettings(prev => ({ ...prev, serviceAreasRaw: val }));
+  };
+
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -78,7 +104,15 @@ const SettingsManager = ({ onThemeChange }) => {
     setMessage({ text: '', type: '' });
     
     try {
-      await axios.put('http://localhost:8000/api/settings', { ...settings, qrCodeImage });
+      const payload = {
+        ...settings,
+        serviceAreas: settings.serviceAreasRaw 
+          ? settings.serviceAreasRaw.split(',').map(a => a.trim()).filter(a => a)
+          : [],
+        qrCodeImage 
+      };
+      
+      await axios.put('http://localhost:8000/api/settings', payload);
       setMessage({ text: 'Settings saved successfully!', type: 'success' });
       setTimeout(() => setMessage({ text: '', type: '' }), 4000);
     } catch (err) {
@@ -186,22 +220,158 @@ const SettingsManager = ({ onThemeChange }) => {
 
             {/* OPERATIONS TAB */}
             {activeTab === 'operations' && (
-              <div className="space-y-6 animate-fade-in">
-                <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
-                  <CalendarClock className="text-brand-400" /> Operational Hours
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Opening Time</label>
-                    <input type="time" name="openingTime" value={settings.openingTime} onChange={handleChange} className="form-input w-full focus:border-brand-500 rounded-lg px-4 py-3" />
+              <div className="space-y-10 animate-fade-in">
+                
+                {/* Section 1: Shop & Service Timings */}
+                <div className="space-y-6">
+                  <h2 className="text-xl font-bold mb-4 flex items-center gap-3 border-b border-brand-500/20 pb-2">
+                    <CalendarClock className="text-brand-400" /> Shop & Service Timings
+                  </h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="p-5 rounded-xl border border-[var(--border-color)] bg-slate-900/20">
+                      <h3 className="font-semibold text-[var(--text-primary)] mb-4 text-sm uppercase tracking-wider">Shop Hours</h3>
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Opening Time</label>
+                          <input type="time" name="openingTime" value={settings.openingTime} onChange={handleChange} className="form-input w-full focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 rounded-lg px-4 py-2" />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Closing Time</label>
+                          <input type="time" name="closingTime" value={settings.closingTime} onChange={handleChange} className="form-input w-full focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 rounded-lg px-4 py-2" />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-5 rounded-xl border border-[var(--border-color)] bg-slate-900/20">
+                      <h3 className="font-semibold text-[var(--text-primary)] mb-4 text-sm uppercase tracking-wider">Pickup Window</h3>
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Start Time</label>
+                          <input type="time" name="pickupStartTime" value={settings.pickupStartTime} onChange={handleChange} className="form-input w-full focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 rounded-lg px-4 py-2" />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">End Time</label>
+                          <input type="time" name="pickupEndTime" value={settings.pickupEndTime} onChange={handleChange} className="form-input w-full focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 rounded-lg px-4 py-2" />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-5 rounded-xl border border-[var(--border-color)] bg-slate-900/20">
+                      <h3 className="font-semibold text-[var(--text-primary)] mb-4 text-sm uppercase tracking-wider">Delivery Window</h3>
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Start Time</label>
+                          <input type="time" name="deliveryStartTime" value={settings.deliveryStartTime} onChange={handleChange} className="form-input w-full focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 rounded-lg px-4 py-2" />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">End Time</label>
+                          <input type="time" name="deliveryEndTime" value={settings.deliveryEndTime} onChange={handleChange} className="form-input w-full focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 rounded-lg px-4 py-2" />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-5 rounded-xl border border-[var(--border-color)] bg-slate-900/20">
+                      <h3 className="font-semibold text-[var(--text-primary)] mb-4 text-sm uppercase tracking-wider">Booking Restrictions</h3>
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Minimum Notice (Hours)</label>
+                          <input type="number" name="minimumNoticeHours" value={settings.minimumNoticeHours} onChange={handleChange} className="form-input w-full focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 rounded-lg px-4 py-2" />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Last Booking Time</label>
+                          <input type="time" name="lastBookingTime" value={settings.lastBookingTime} onChange={handleChange} className="form-input w-full focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 rounded-lg px-4 py-2" />
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Closing Time</label>
-                    <input type="time" name="closingTime" value={settings.closingTime} onChange={handleChange} className="form-input w-full focus:border-brand-500 rounded-lg px-4 py-3" />
+                </div>
+
+                {/* Section 2: Working Days & Holiday */}
+                <div className="space-y-6">
+                  <h2 className="text-xl font-bold mb-4 flex items-center gap-3 border-b border-brand-500/20 pb-2">
+                    <CalendarClock className="text-brand-400" /> Working Days & Holidays
+                  </h2>
+                  
+                  <div className="p-5 rounded-xl border border-[var(--border-color)]">
+                    <h3 className="font-semibold text-[var(--text-primary)] mb-4">Closed Days (Select to mark as closed)</h3>
+                    <div className="flex flex-wrap gap-3">
+                      {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(day => {
+                        const isClosed = settings.closedDays.includes(day);
+                        return (
+                          <button
+                            key={day}
+                            type="button"
+                            onClick={() => toggleClosedDay(day)}
+                            className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${
+                              isClosed 
+                                ? 'bg-rose-500/10 text-rose-500 border border-rose-500/30 shadow-[0_0_15px_rgba(244,63,94,0.3)]' 
+                                : 'bg-slate-800 text-slate-300 border border-slate-700 hover:border-slate-500'
+                            }`}
+                          >
+                            {day.slice(0, 3)}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Working Days</label>
-                    <input type="text" name="workingDays" value={settings.workingDays} onChange={handleChange} placeholder="e.g. Monday - Saturday" className="form-input w-full focus:border-brand-500 rounded-lg px-4 py-3" />
+
+                  <div className="flex items-center justify-between p-5 rounded-xl border border-[var(--border-color)]">
+                    <div>
+                      <h3 className="font-semibold text-lg">Holiday Mode (Temporarily Closed)</h3>
+                      <p className="text-sm text-[var(--text-secondary)]">Pause all incoming orders immediately</p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input type="checkbox" name="holidayMode" checked={settings.holidayMode} onChange={handleChange} className="sr-only peer" />
+                      <div className="w-14 h-7 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-rose-500"></div>
+                    </label>
+                  </div>
+                </div>
+
+                {/* Section 3: Logistics & Express */}
+                <div className="space-y-6">
+                  <h2 className="text-xl font-bold mb-4 flex items-center gap-3 border-b border-brand-500/20 pb-2">
+                    <Building2 className="text-brand-400" /> Logistics & Express Services
+                  </h2>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="p-5 rounded-xl border border-[var(--border-color)]">
+                      <h3 className="font-semibold text-[var(--text-primary)] mb-2">Service Areas</h3>
+                      <p className="text-xs text-[var(--text-secondary)] mb-4">Comma separated list (e.g. Shanti Nagar, Civil Line)</p>
+                      <input type="text" name="serviceAreasRaw" value={settings.serviceAreasRaw || ''} onChange={handleAreasChange} placeholder="Area 1, Area 2..." className="form-input w-full focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 rounded-lg px-4 py-3" />
+                    </div>
+                    <div className="p-5 rounded-xl border border-[var(--border-color)]">
+                      <h3 className="font-semibold text-[var(--text-primary)] mb-2">Slot Duration</h3>
+                      <p className="text-xs text-[var(--text-secondary)] mb-4">Duration of each pickup/delivery slot</p>
+                      <select name="slotDuration" value={settings.slotDuration} onChange={handleChange} className="form-input w-full focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 rounded-lg px-4 py-3 appearance-none">
+                        <option value="30 mins">30 mins</option>
+                        <option value="1 hour">1 hour</option>
+                        <option value="2 hours">2 hours</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="flex items-center justify-between p-5 rounded-xl border border-[var(--border-color)]">
+                      <div>
+                        <h3 className="font-semibold text-[var(--text-primary)]">Express Delivery</h3>
+                        <p className="text-sm text-[var(--text-secondary)]">Enable express processing</p>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="expressDeliveryEnabled" checked={settings.expressDeliveryEnabled} onChange={handleChange} className="sr-only peer" />
+                        <div className="w-14 h-7 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-brand-500"></div>
+                      </label>
+                    </div>
+                    
+                    <div className="flex items-center justify-between p-5 rounded-xl border border-[var(--border-color)]">
+                      <div>
+                        <h3 className="font-semibold text-[var(--text-primary)]">Same Day Delivery</h3>
+                        <p className="text-sm text-[var(--text-secondary)]">Enable same-day rush orders</p>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="sameDayDeliveryEnabled" checked={settings.sameDayDeliveryEnabled} onChange={handleChange} className="sr-only peer" />
+                        <div className="w-14 h-7 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-brand-500"></div>
+                      </label>
+                    </div>
                   </div>
                 </div>
               </div>
