@@ -367,12 +367,12 @@ const MainWebsite = () => {
                     <div className="flex justify-between items-center">
                         <div className="flex items-center gap-3 relative">
                             <div className="relative">
-                                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-600 text-white flex items-center justify-center shadow-lg shadow-brand-500/30">
+                                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-600 text-white flex items-center justify-center shadow-lg shadow-brand-500/30 relative">
                                     <Droplets size={24} />
+                                    <span className="absolute -top-2.5 -right-5 bg-[#ff4466] text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full shadow-md border-[3px] border-white whitespace-nowrap">
+                                        10% OFF
+                                    </span>
                                 </div>
-                                <span className="absolute -top-3 -right-6 bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg shadow-rose-500/30 animate-bounce border-2 border-white">
-                                    10% OFF
-                                </span>
                             </div>
                             <div>
                                 <h1 className="font-extrabold text-2xl tracking-tight text-slate-900 leading-none">
