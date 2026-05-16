@@ -147,7 +147,17 @@ const Dashboard = () => {
                       <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginTop: '4px' }}>{booking.phone}</div>
                     </td>
                     <td>
-                      <span className="badge service">{booking.service}</span>
+                      <div className="flex flex-col gap-1 max-w-[200px]">
+                        {booking.items && booking.items.length > 0 ? (
+                          booking.items.map((item, i) => (
+                            <span key={i} className="text-xs bg-brand-50 text-brand-700 font-medium px-2 py-1 rounded-md border border-brand-100 whitespace-nowrap overflow-hidden text-ellipsis">
+                              {item.name} <span className="font-bold opacity-75">x{item.quantity}</span>
+                            </span>
+                          ))
+                        ) : (
+                          <span className="badge service">{booking.service || 'Legacy Data'}</span>
+                        )}
+                      </div>
                     </td>
                     <td>
                       <div style={{ fontWeight: 500 }}>{booking.date}</div>
@@ -163,6 +173,9 @@ const Dashboard = () => {
                         }`}>
                           {booking.paymentMethod || 'Cash on Delivery'}
                         </span>
+                        {booking.totalAmount > 0 && (
+                          <span className="text-sm font-bold text-slate-800 mt-1">₹{booking.totalAmount}</span>
+                        )}
                         {booking.paymentScreenshot && (
                           <button 
                             onClick={() => setSelectedReceipt(booking.paymentScreenshot)}
@@ -200,10 +213,10 @@ const Dashboard = () => {
 
       {selectedReceipt && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={() => setSelectedReceipt(null)}>
-          <div className="relative max-w-2xl w-full max-h-[90vh] bg-slate-900 rounded-2xl border border-slate-700 p-2 shadow-2xl flex flex-col" onClick={e => e.stopPropagation()}>
+          <div className="relative max-w-2xl w-full max-h-[90vh] bg-[var(--bg-secondary)] rounded-2xl border border-[var(--border-color)] p-2 shadow-2xl flex flex-col" onClick={e => e.stopPropagation()}>
             <div className="flex justify-between items-center p-4 border-b border-slate-800">
-              <h3 className="text-white font-bold text-lg">Payment Receipt</h3>
-              <button onClick={() => setSelectedReceipt(null)} className="text-slate-400 hover:text-white bg-slate-800 p-2 rounded-full transition-colors">
+              <h3 className="text-[var(--text-primary)] font-bold text-lg">Payment Receipt</h3>
+              <button onClick={() => setSelectedReceipt(null)} className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] bg-[var(--bg-tertiary)] p-2 rounded-full transition-colors">
                 <X size={20} />
               </button>
             </div>

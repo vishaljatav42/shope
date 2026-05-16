@@ -9,9 +9,15 @@ const bookingSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    service: {
-        type: String,
-        required: true
+    items: [{
+        name: { type: String, required: true },
+        price: { type: Number, required: true },
+        quantity: { type: Number, required: true }
+    }],
+    totalAmount: {
+        type: Number,
+        required: true,
+        default: 0
     },
     date: {
         type: String,

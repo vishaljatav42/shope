@@ -11,7 +11,7 @@ const MainWebsite = () => {
     const [formData, setFormData] = useState({
         name: '',
         phone: '',
-        service: 'Dry Cleaning',
+        items: [],
         date: '',
         time: '',
         address: '',
@@ -72,7 +72,6 @@ const MainWebsite = () => {
                     const data = await res.json();
                     if (data && data.length > 0) {
                         setDbServices(data);
-                        setFormData(prev => ({...prev, service: data[0].name}));
                     } else {
                         // Fallback if database is empty
                         const defaultServices = [
@@ -82,7 +81,6 @@ const MainWebsite = () => {
                             { name: 'Deep Cleaning', description: 'Thorough deep cleaning for heavy items like blankets and curtains.', price: 300 }
                         ];
                         setDbServices(defaultServices);
-                        setFormData(prev => ({...prev, service: defaultServices[0].name}));
                     }
                 }
             } catch (error) {
@@ -131,7 +129,16 @@ const MainWebsite = () => {
 
     const handleBooking = async (e) => {
         e.preventDefault();
+        if (formData.items.length === 0) {
+            alert('Please select at least one service by adding quantities.');
+            return;
+        }
         setIsSubmitting(true);
+        
+        const payload = {
+            ...formData,
+            totalAmount: formData.items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+        };
         
         try {
             const response = await fetch('http://localhost:8000/api/bookings', {
@@ -139,14 +146,14 @@ const MainWebsite = () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ ...formData, paymentScreenshot }),
+                body: JSON.stringify({ ...payload, paymentScreenshot }),
             });
             
             if (response.ok) {
                 setBookingSuccess(true);
                 
                 // Reset form
-                setFormData({ name: '', phone: '', service: 'Dry Cleaning', date: '', time: '', address: '', instructions: '', paymentMethod: 'Cash on Delivery' });
+                setFormData({ name: '', phone: '', items: [], date: '', time: '', address: '', instructions: '', paymentMethod: 'Cash on Delivery' });
                 setPaymentScreenshot('');
                 setTimeout(() => setBookingSuccess(false), 5000);
             } else {
@@ -173,6 +180,26 @@ const MainWebsite = () => {
             };
             reader.readAsDataURL(file);
         }
+    };
+
+    const handleQuantityChange = (service, change) => {
+        setFormData(prev => {
+            const items = [...prev.items];
+            const index = items.findIndex(item => item.name === service.name);
+            
+            if (index >= 0) {
+                const newQuantity = items[index].quantity + change;
+                if (newQuantity <= 0) {
+                    items.splice(index, 1);
+                } else {
+                    items[index].quantity = newQuantity;
+                }
+            } else if (change > 0) {
+                items.push({ name: service.name, price: service.price, quantity: 1 });
+            }
+            
+            return { ...prev, items };
+        });
     };
 
     useEffect(() => {
@@ -555,23 +582,33 @@ const MainWebsite = () => {
                                             placeholder="10-digit number"
                                         />
                                     </div>
-                                    <div>
-                                        <label className="block text-sm font-bold text-slate-700 mb-2">Select Service</label>
-                                        <select 
-                                            value={formData.service}
-                                            onChange={(e) => setFormData({...formData, service: e.target.value})}
-                                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 transition-all font-medium text-slate-900 appearance-none"
-                                        >
+                                    <div className="col-span-1 sm:col-span-2">
+                                        <label className="block text-sm font-bold text-slate-700 mb-3">Select Services & Quantity</label>
+                                        <div className="bg-slate-50 border border-slate-200 rounded-xl p-2 sm:p-4 max-h-60 overflow-y-auto space-y-2">
                                             {isLoadingServices ? (
-                                                <option>Loading...</option>
+                                                <div className="p-4 text-center text-sm font-bold text-slate-500">Loading...</div>
                                             ) : dbServices.length === 0 ? (
-                                                <option>No Services Available</option>
+                                                <div className="p-4 text-center text-sm font-bold text-slate-500">No services available</div>
                                             ) : (
-                                                dbServices.map((s, i) => (
-                                                    <option key={i} value={s.name}>{s.name}</option>
-                                                ))
+                                                dbServices.map((service, idx) => {
+                                                    const cartItem = formData.items.find(item => item.name === service.name);
+                                                    const qty = cartItem ? cartItem.quantity : 0;
+                                                    return (
+                                                        <div key={idx} className="flex items-center justify-between bg-white p-3 rounded-lg border border-slate-100 shadow-sm hover:border-brand-200 transition-colors">
+                                                            <div>
+                                                                <div className="font-bold text-slate-800 text-sm">{service.name}</div>
+                                                                <div className="text-xs text-brand-600 font-semibold">₹{service.price}</div>
+                                                            </div>
+                                                            <div className="flex items-center gap-3">
+                                                                <button type="button" onClick={() => handleQuantityChange(service, -1)} className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-lg transition-colors ${qty > 0 ? 'bg-brand-100 text-brand-600 hover:bg-brand-200' : 'bg-slate-100 text-slate-400 cursor-not-allowed'}`} disabled={qty === 0}>-</button>
+                                                                <span className="w-4 text-center font-bold text-slate-800">{qty}</span>
+                                                                <button type="button" onClick={() => handleQuantityChange(service, 1)} className="w-8 h-8 rounded-full bg-brand-100 text-brand-600 hover:bg-brand-200 flex items-center justify-center font-bold text-lg transition-colors">+</button>
+                                                            </div>
+                                                        </div>
+                                                    )
+                                                })
                                             )}
-                                        </select>
+                                        </div>
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -654,6 +691,18 @@ const MainWebsite = () => {
                                         )}
                                     </div>
                                     
+                                    {formData.items.length > 0 && (
+                                        <div className="mt-6 bg-brand-50 border border-brand-200 rounded-xl p-4 flex justify-between items-center shadow-sm">
+                                            <div className="font-bold text-brand-800 flex items-center gap-2">
+                                                <span className="bg-brand-200 text-brand-700 px-2 py-0.5 rounded-full text-xs">{formData.items.reduce((s, i) => s + i.quantity, 0)} items</span>
+                                                Total Amount:
+                                            </div>
+                                            <div className="text-2xl font-extrabold text-brand-600">
+                                                ₹{formData.items.reduce((sum, item) => sum + (item.price * item.quantity), 0)}
+                                            </div>
+                                        </div>
+                                    )}
+
                                     {formData.paymentMethod === 'UPI' && (
                                         <div className="mt-4 p-5 rounded-xl bg-blue-50 border border-blue-100 flex flex-col items-center justify-center text-center">
                                             {settings.qrCodeImage && (

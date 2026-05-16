@@ -28,6 +28,9 @@
   --glass-bg: rgba(255, 255, 255, 0.7);
   --glass-border: rgba(0, 0, 0, 0.05);
   --card-shadow: 0 4px 15px 0 rgba(0, 0, 0, 0.05);
+  --input-bg: #ffffff;
+  --input-border: rgba(0, 0, 0, 0.1);
+  --input-focus: rgba(99, 102, 241, 0.2);
 }
 
 * {
@@ -174,7 +177,7 @@
   font-size: 2.25rem;
   font-weight: 700;
   letter-spacing: -0.03em;
-  background: linear-gradient(to right, #fff, #94a3b8);
+  background: linear-gradient(to right, var(--text-primary), var(--text-secondary));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -504,8 +507,8 @@
 .form-input {
   width: 100%;
   padding: 14px 16px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--input-bg, rgba(255, 255, 255, 0.03));
+  border: 1px solid var(--input-border, rgba(255, 255, 255, 0.1));
   border-radius: 12px;
   color: var(--text-primary);
   font-family: 'Outfit', sans-serif;
@@ -516,8 +519,8 @@
 .form-input:focus {
   outline: none;
   border-color: rgba(168, 85, 247, 0.5);
-  box-shadow: 0 0 0 4px rgba(168, 85, 247, 0.15);
-  background: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 0 0 4px var(--input-focus, rgba(168, 85, 247, 0.15));
+  background: var(--input-bg, rgba(255, 255, 255, 0.05));
 }
 
 .form-input::placeholder {

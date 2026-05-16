@@ -96,16 +96,16 @@ const SettingsManager = ({ onThemeChange }) => {
     { id: 'security', label: 'Security', icon: Shield },
   ];
 
-  if (loading) return <div className="p-8 text-white">Loading settings...</div>;
+  if (loading) return <div className="p-8 ">Loading settings...</div>;
 
   return (
     <div className="animate-fade-in pb-12">
       <div className="header flex justify-between items-center mb-8">
         <div>
-          <h1 className="header-title text-3xl font-bold text-white mb-2">Platform Settings</h1>
-          <p className="text-slate-400">Manage all aspects of your laundry business platform</p>
+          <h1 className="header-title text-3xl font-bold  mb-2">Platform Settings</h1>
+          <p className="text-[var(--text-secondary)]">Manage all aspects of your laundry business platform</p>
         </div>
-        <button onClick={handleSave} disabled={saving} className="btn btn-primary px-6 py-3 flex items-center gap-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold transition-all shadow-lg hover:shadow-brand-500/25">
+        <button onClick={handleSave} disabled={saving} className="btn btn-primary px-6 py-3 flex items-center gap-2 rounded-xl bg-brand-600 hover:bg-brand-700  font-semibold transition-all shadow-lg hover:shadow-brand-500/25">
           {saving ? <div className="loader w-5 h-5 border-2"></div> : <Save size={20} />}
           {saving ? 'Saving...' : 'Save All Changes'}
         </button>
@@ -130,8 +130,8 @@ const SettingsManager = ({ onThemeChange }) => {
                 onClick={() => setActiveTab(tab.id)}
                 className={`w-full flex items-center gap-3 px-5 py-4 rounded-xl font-medium transition-all ${
                   activeTab === tab.id 
-                    ? 'bg-slate-800 text-brand-400 shadow-md border border-slate-700' 
-                    : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'
+                    ? 'bg-[var(--bg-tertiary)] text-brand-500 shadow-md border border-[var(--border-color)]' 
+                    : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]'
                 }`}
               >
                 <Icon size={20} className={activeTab === tab.id ? 'text-brand-500' : ''} />
@@ -142,27 +142,27 @@ const SettingsManager = ({ onThemeChange }) => {
         </div>
 
         {/* Tab Content */}
-        <div className="flex-1 glass-panel p-8 rounded-2xl border border-slate-700 bg-slate-900/50 backdrop-blur-xl">
+        <div className="flex-1 glass-panel p-8 rounded-2xl border   backdrop-blur-xl">
           <form className="space-y-8">
             
             {/* GENERAL TAB */}
             {activeTab === 'general' && (
               <div className="space-y-6 animate-fade-in">
-                <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                <h2 className="text-2xl font-bold  mb-6 flex items-center gap-3">
                   <Building2 className="text-brand-400" /> General Info
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-slate-400 mb-2">Business Name</label>
-                    <input type="text" name="businessName" value={settings.businessName} onChange={handleChange} className="form-input w-full bg-slate-800 border-slate-700 focus:border-brand-500 rounded-lg px-4 py-3 text-white" />
+                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Business Name</label>
+                    <input type="text" name="businessName" value={settings.businessName} onChange={handleChange} className="form-input w-full   focus:border-brand-500 rounded-lg px-4 py-3 " />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-400 mb-2">Tagline</label>
-                    <input type="text" name="tagline" value={settings.tagline} onChange={handleChange} className="form-input w-full bg-slate-800 border-slate-700 focus:border-brand-500 rounded-lg px-4 py-3 text-white" />
+                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Tagline</label>
+                    <input type="text" name="tagline" value={settings.tagline} onChange={handleChange} className="form-input w-full   focus:border-brand-500 rounded-lg px-4 py-3 " />
                   </div>
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-slate-400 mb-2">Shop Address</label>
-                    <textarea name="address" value={settings.address} onChange={handleChange} rows="3" className="form-input w-full bg-slate-800 border-slate-700 focus:border-brand-500 rounded-lg px-4 py-3 text-white resize-y"></textarea>
+                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Shop Address</label>
+                    <textarea name="address" value={settings.address} onChange={handleChange} rows="3" className="form-input w-full   focus:border-brand-500 rounded-lg px-4 py-3  resize-y"></textarea>
                   </div>
                 </div>
               </div>
@@ -171,36 +171,36 @@ const SettingsManager = ({ onThemeChange }) => {
             {/* CONTACT TAB */}
             {activeTab === 'contact' && (
               <div className="space-y-6 animate-fade-in">
-                <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                <h2 className="text-2xl font-bold  mb-6 flex items-center gap-3">
                   <Phone className="text-brand-400" /> Contact Details
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-slate-400 mb-2">Phone Number</label>
+                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Phone Number</label>
                     <div className="relative">
                       <Phone className="absolute left-3 top-3.5 text-slate-500" size={18} />
-                      <input type="text" name="phone" value={settings.phone} onChange={handleChange} className="form-input w-full pl-10 bg-slate-800 border-slate-700 focus:border-brand-500 rounded-lg py-3 text-white" />
+                      <input type="text" name="phone" value={settings.phone} onChange={handleChange} className="form-input w-full pl-10   focus:border-brand-500 rounded-lg py-3 " />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-400 mb-2">WhatsApp Number</label>
+                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">WhatsApp Number</label>
                     <div className="relative">
                       <MessageCircle className="absolute left-3 top-3.5 text-emerald-500" size={18} />
-                      <input type="text" name="whatsapp" value={settings.whatsapp} onChange={handleChange} className="form-input w-full pl-10 bg-slate-800 border-slate-700 focus:border-emerald-500 rounded-lg py-3 text-white" />
+                      <input type="text" name="whatsapp" value={settings.whatsapp} onChange={handleChange} className="form-input w-full pl-10   focus:border-emerald-500 rounded-lg py-3 " />
                     </div>
                   </div>
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-slate-400 mb-2">Email Address</label>
+                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Email Address</label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-3.5 text-slate-500" size={18} />
-                      <input type="email" name="email" value={settings.email} onChange={handleChange} className="form-input w-full pl-10 bg-slate-800 border-slate-700 focus:border-brand-500 rounded-lg py-3 text-white" />
+                      <input type="email" name="email" value={settings.email} onChange={handleChange} className="form-input w-full pl-10   focus:border-brand-500 rounded-lg py-3 " />
                     </div>
                   </div>
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-slate-400 mb-2">Google Map Link</label>
+                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Google Map Link</label>
                     <div className="relative">
                       <MapPin className="absolute left-3 top-3.5 text-rose-500" size={18} />
-                      <input type="text" name="mapLocation" value={settings.mapLocation} onChange={handleChange} placeholder="Paste Google Maps URL here" className="form-input w-full pl-10 bg-slate-800 border-slate-700 focus:border-brand-500 rounded-lg py-3 text-white" />
+                      <input type="text" name="mapLocation" value={settings.mapLocation} onChange={handleChange} placeholder="Paste Google Maps URL here" className="form-input w-full pl-10   focus:border-brand-500 rounded-lg py-3 " />
                     </div>
                   </div>
                 </div>
@@ -210,14 +210,14 @@ const SettingsManager = ({ onThemeChange }) => {
             {/* BOOKING TAB */}
             {activeTab === 'booking' && (
               <div className="space-y-8 animate-fade-in">
-                <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                <h2 className="text-2xl font-bold  mb-6 flex items-center gap-3">
                   <CalendarClock className="text-brand-400" /> Booking Settings
                 </h2>
                 
-                <div className="flex items-center justify-between p-5 rounded-xl border border-slate-700 bg-slate-800/50">
+                <div className="flex items-center justify-between p-5 rounded-xl border  /50">
                   <div>
-                    <h3 className="font-semibold text-white text-lg">Home Delivery</h3>
-                    <p className="text-sm text-slate-400">Enable or disable home delivery option for customers</p>
+                    <h3 className="font-semibold  text-lg">Home Delivery</h3>
+                    <p className="text-sm text-[var(--text-secondary)]">Enable or disable home delivery option for customers</p>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input type="checkbox" name="homeDelivery" checked={settings.homeDelivery} onChange={handleChange} className="sr-only peer" />
@@ -227,16 +227,16 @@ const SettingsManager = ({ onThemeChange }) => {
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-slate-400 mb-2">Min. Order Amount (₹)</label>
-                    <input type="number" name="minimumOrderAmount" value={settings.minimumOrderAmount} onChange={handleChange} className="form-input w-full bg-slate-800 border-slate-700 focus:border-brand-500 rounded-lg px-4 py-3 text-white" />
+                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Min. Order Amount (₹)</label>
+                    <input type="number" name="minimumOrderAmount" value={settings.minimumOrderAmount} onChange={handleChange} className="form-input w-full   focus:border-brand-500 rounded-lg px-4 py-3 " />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-400 mb-2">Pickup Charges (₹)</label>
-                    <input type="number" name="pickupCharges" value={settings.pickupCharges} onChange={handleChange} className="form-input w-full bg-slate-800 border-slate-700 focus:border-brand-500 rounded-lg px-4 py-3 text-white" />
+                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Pickup Charges (₹)</label>
+                    <input type="number" name="pickupCharges" value={settings.pickupCharges} onChange={handleChange} className="form-input w-full   focus:border-brand-500 rounded-lg px-4 py-3 " />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-400 mb-2">Express Delivery Extra (₹)</label>
-                    <input type="number" name="expressDeliveryCharges" value={settings.expressDeliveryCharges} onChange={handleChange} className="form-input w-full bg-slate-800 border-slate-700 focus:border-brand-500 rounded-lg px-4 py-3 text-white" />
+                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Express Delivery Extra (₹)</label>
+                    <input type="number" name="expressDeliveryCharges" value={settings.expressDeliveryCharges} onChange={handleChange} className="form-input w-full   focus:border-brand-500 rounded-lg px-4 py-3 " />
                   </div>
                 </div>
               </div>
@@ -245,14 +245,14 @@ const SettingsManager = ({ onThemeChange }) => {
             {/* PAYMENTS TAB */}
             {activeTab === 'payments' && (
               <div className="space-y-8 animate-fade-in">
-                <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                <h2 className="text-2xl font-bold  mb-6 flex items-center gap-3">
                   <CreditCard className="text-brand-400" /> Payment Methods
                 </h2>
                 
-                <div className="flex items-center justify-between p-5 rounded-xl border border-slate-700 bg-slate-800/50">
+                <div className="flex items-center justify-between p-5 rounded-xl border  /50">
                   <div>
-                    <h3 className="font-semibold text-white text-lg">Cash on Delivery (COD)</h3>
-                    <p className="text-sm text-slate-400">Allow customers to pay when clothes are delivered</p>
+                    <h3 className="font-semibold  text-lg">Cash on Delivery (COD)</h3>
+                    <p className="text-sm text-[var(--text-secondary)]">Allow customers to pay when clothes are delivered</p>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input type="checkbox" name="cashOnDelivery" checked={settings.cashOnDelivery} onChange={handleChange} className="sr-only peer" />
@@ -260,10 +260,10 @@ const SettingsManager = ({ onThemeChange }) => {
                   </label>
                 </div>
 
-                <div className="flex items-center justify-between p-5 rounded-xl border border-slate-700 bg-slate-800/50">
+                <div className="flex items-center justify-between p-5 rounded-xl border  /50">
                   <div>
-                    <h3 className="font-semibold text-white text-lg">UPI Payment (QR)</h3>
-                    <p className="text-sm text-slate-400">Enable direct bank transfers via UPI</p>
+                    <h3 className="font-semibold  text-lg">UPI Payment (QR)</h3>
+                    <p className="text-sm text-[var(--text-secondary)]">Enable direct bank transfers via UPI</p>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input type="checkbox" name="upiPaymentEnabled" checked={settings.upiPaymentEnabled} onChange={handleChange} className="sr-only peer" />
@@ -274,13 +274,13 @@ const SettingsManager = ({ onThemeChange }) => {
                 {settings.upiPaymentEnabled && (
                   <div className="space-y-6">
                     <div>
-                      <label className="block text-sm font-medium text-slate-400 mb-2">UPI ID (For QR Payments)</label>
-                      <input type="text" name="upiId" value={settings.upiId} onChange={handleChange} placeholder="e.g. 9406585448@ybl" className="form-input w-full bg-slate-800 border-slate-700 focus:border-brand-500 rounded-lg px-4 py-3 text-white" />
+                      <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">UPI ID (For QR Payments)</label>
+                      <input type="text" name="upiId" value={settings.upiId} onChange={handleChange} placeholder="e.g. 9406585448@ybl" className="form-input w-full   focus:border-brand-500 rounded-lg px-4 py-3 " />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-400 mb-2">Upload UPI QR Code (Optional)</label>
+                      <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Upload UPI QR Code (Optional)</label>
                       <div className="flex items-center gap-6">
-                        <div className="w-32 h-32 rounded-xl border-2 border-dashed border-slate-600 flex items-center justify-center bg-slate-800/50 overflow-hidden relative">
+                        <div className="w-32 h-32 rounded-xl border-2 border-dashed border-slate-600 flex items-center justify-center /50 overflow-hidden relative">
                           {qrCodeImage ? (
                             <img src={qrCodeImage} alt="UPI QR Code" className="w-full h-full object-contain" />
                           ) : (
@@ -293,7 +293,7 @@ const SettingsManager = ({ onThemeChange }) => {
                             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                           />
                         </div>
-                        <div className="text-sm text-slate-400">
+                        <div className="text-sm text-[var(--text-secondary)]">
                           <p className="mb-1">Upload a screenshot of your PhonePe/Paytm QR code.</p>
                           <p className="text-xs">Max size: 1MB. Recommended format: JPG, PNG.</p>
                           {qrCodeImage && (
@@ -320,15 +320,15 @@ const SettingsManager = ({ onThemeChange }) => {
             {/* NOTIFICATIONS TAB */}
             {activeTab === 'notifications' && (
               <div className="space-y-6 animate-fade-in">
-                <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                <h2 className="text-2xl font-bold  mb-6 flex items-center gap-3">
                   <Bell className="text-brand-400" /> Notifications & Alerts
                 </h2>
                 
                 {['whatsappAlerts', 'smsAlerts', 'emailAlerts'].map(alert => (
-                  <div key={alert} className="flex items-center justify-between p-5 rounded-xl border border-slate-700 bg-slate-800/50">
+                  <div key={alert} className="flex items-center justify-between p-5 rounded-xl border  /50">
                     <div>
-                      <h3 className="font-semibold text-white text-lg capitalize">{alert.replace('Alerts', '')} Alerts</h3>
-                      <p className="text-sm text-slate-400">Send automated messages to customers via {alert.replace('Alerts', '')}</p>
+                      <h3 className="font-semibold  text-lg capitalize">{alert.replace('Alerts', '')} Alerts</h3>
+                      <p className="text-sm text-[var(--text-secondary)]">Send automated messages to customers via {alert.replace('Alerts', '')}</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input type="checkbox" name={alert} checked={settings[alert]} onChange={handleChange} className="sr-only peer" />
@@ -342,20 +342,20 @@ const SettingsManager = ({ onThemeChange }) => {
             {/* SECURITY TAB */}
             {activeTab === 'security' && (
               <div className="space-y-8 animate-fade-in">
-                <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                <h2 className="text-2xl font-bold  mb-6 flex items-center gap-3">
                   <Shield className="text-brand-400" /> Admin Security
                 </h2>
                 
                 <div className="p-6 rounded-2xl border border-rose-500/20 bg-rose-500/5">
-                  <h3 className="text-lg font-bold text-white mb-4">Change Admin Credentials</h3>
+                  <h3 className="text-lg font-bold  mb-4">Change Admin Credentials</h3>
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-slate-400 mb-2">Admin Username</label>
-                      <input type="text" name="adminUsername" value={settings.adminUsername} onChange={handleChange} className="form-input w-full max-w-md bg-slate-800 border-slate-700 focus:border-rose-500 rounded-lg px-4 py-3 text-white" />
+                      <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Admin Username</label>
+                      <input type="text" name="adminUsername" value={settings.adminUsername} onChange={handleChange} className="form-input w-full max-w-md   focus:border-rose-500 rounded-lg px-4 py-3 " />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-400 mb-2">Admin Password</label>
-                      <input type="password" name="adminPassword" value={settings.adminPassword} onChange={handleChange} className="form-input w-full max-w-md bg-slate-800 border-slate-700 focus:border-rose-500 rounded-lg px-4 py-3 text-white" />
+                      <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Admin Password</label>
+                      <input type="password" name="adminPassword" value={settings.adminPassword} onChange={handleChange} className="form-input w-full max-w-md   focus:border-rose-500 rounded-lg px-4 py-3 " />
                     </div>
                   </div>
                 </div>
@@ -365,14 +365,14 @@ const SettingsManager = ({ onThemeChange }) => {
             {/* THEME TAB */}
             {activeTab === 'theme' && (
               <div className="space-y-8 animate-fade-in">
-                <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                <h2 className="text-2xl font-bold  mb-6 flex items-center gap-3">
                   <Palette className="text-brand-400" /> Appearance
                 </h2>
                 
-                <div className="flex items-center justify-between p-5 rounded-xl border border-slate-700 bg-slate-800/50">
+                <div className="flex items-center justify-between p-5 rounded-xl border  /50">
                   <div>
-                    <h3 className="font-semibold text-white text-lg">Dark Mode</h3>
-                    <p className="text-sm text-slate-400">Toggle dark mode for the admin panel</p>
+                    <h3 className="font-semibold  text-lg">Dark Mode</h3>
+                    <p className="text-sm text-[var(--text-secondary)]">Toggle dark mode for the admin panel</p>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input type="checkbox" name="darkMode" checked={settings.darkMode} onChange={handleChange} className="sr-only peer" />
