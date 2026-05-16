@@ -4,9 +4,10 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const Booking = require('./models/Booking');
 const Service = require('./models/Service');
+const Setting = require('./models/Setting');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 8000;
 
 // Middleware
 app.use(cors());
@@ -42,6 +43,17 @@ app.post('/api/bookings', async (req, res) => {
     }
 });
 
+app.put('/api/bookings/:id/status', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+        const updatedBooking = await Booking.findByIdAndUpdate(id, { status }, { new: true });
+        res.status(200).json({ success: true, data: updatedBooking });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to update booking status' });
+    }
+});
+
 // Service Routes
 app.get('/api/services', async (req, res) => {
     try {
@@ -69,6 +81,58 @@ app.delete('/api/services/:id', async (req, res) => {
         res.status(200).json({ success: true, message: 'Service deleted successfully!' });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Failed to delete service', error: error.message });
+    }
+});
+
+// Admin Auth Route
+app.post('/api/admin/login', async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        let settings = await Setting.findOne();
+        
+        // If settings don't exist yet, check against defaults
+        if (!settings) {
+            if (username === 'admin' && password === 'admin123') {
+                return res.status(200).json({ success: true });
+            }
+            return res.status(401).json({ success: false, message: 'Invalid credentials' });
+        }
+
+        if (settings.adminUsername === username && settings.adminPassword === password) {
+            return res.status(200).json({ success: true });
+        }
+        res.status(401).json({ success: false, message: 'Invalid credentials' });
+    } catch (error) {
+        res.status(500).json({ error: 'Server error during login' });
+    }
+});
+
+// Settings Routes
+app.get('/api/settings', async (req, res) => {
+    try {
+        let settings = await Setting.findOne();
+        if (!settings) {
+            settings = await Setting.create({});
+        }
+        res.status(200).json(settings);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch settings' });
+    }
+});
+
+app.put('/api/settings', async (req, res) => {
+    try {
+        let settings = await Setting.findOne();
+        if (!settings) {
+            settings = new Setting(req.body);
+        } else {
+            Object.assign(settings, req.body);
+            settings.updatedAt = Date.now();
+        }
+        await settings.save();
+        res.status(200).json({ success: true, data: settings });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to update settings' });
     }
 });
 

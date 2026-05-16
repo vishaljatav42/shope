@@ -2,7 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shirt, Sparkles, Sofa, Footprints, Phone, MessageCircle, MapPin, Droplets, ArrowRight, CheckCircle2, Clock } from 'lucide-react';
 
-const App = () => {
+import { Routes, Route } from 'react-router-dom';
+import AdminApp from './AdminApp';
+
+const MainWebsite = () => {
     const [scrolled, setScrolled] = useState(false);
     const [showAllGallery, setShowAllGallery] = useState(false);
     const [formData, setFormData] = useState({
@@ -12,7 +15,8 @@ const App = () => {
         date: '',
         time: '',
         address: '',
-        instructions: ''
+        instructions: '',
+        paymentMethod: 'Cash on Delivery'
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [bookingSuccess, setBookingSuccess] = useState(false);
@@ -20,11 +24,37 @@ const App = () => {
     const [selectedImage, setSelectedImage] = useState(null);
     const [dbServices, setDbServices] = useState([]);
     const [isLoadingServices, setIsLoadingServices] = useState(true);
+    const [settings, setSettings] = useState({
+        businessName: 'Clean & Care Laundry',
+        tagline: 'Premium Laundry Services in Vidisha',
+        phone: '9406585448',
+        whatsapp: '8871702059',
+        address: 'BTI Road, Near CM House,\nSherpura, Vidisha (M.P.)',
+        mapLocation: '',
+        cashOnDelivery: true,
+        upiPaymentEnabled: true,
+        upiId: 'Q28290294@ybl' // Default placeholder UPI ID
+    });
+
+    useEffect(() => {
+        const fetchSettings = async () => {
+            try {
+                const res = await fetch('http://localhost:8000/api/settings');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data) setSettings(data);
+                }
+            } catch (error) {
+                console.error('Failed to load settings:', error);
+            }
+        };
+        fetchSettings();
+    }, []);
 
     useEffect(() => {
         const fetchServices = async () => {
             try {
-                const res = await fetch('http://localhost:5000/api/services');
+                const res = await fetch('http://localhost:8000/api/services');
                 if (res.ok) {
                     const data = await res.json();
                     setDbServices(data);
@@ -47,7 +77,11 @@ const App = () => {
         "https://images.unsplash.com/photo-1563223771-5fe4038fbfc9?q=80&w=800&auto=format&fit=crop",
         "https://images.unsplash.com/photo-1610557892470-55d9e80c0bce?q=80&w=800&auto=format&fit=crop",
         "https://images.unsplash.com/photo-1583845112239-99ef1345b71c?q=80&w=800&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1521656693074-0ef32e80a5d5?q=80&w=800&auto=format&fit=crop"
+        "https://images.unsplash.com/photo-1521656693074-0ef32e80a5d5?q=80&w=800&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1517677208171-0bc6725a3e60?q=80&w=800&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1584814349141-863a35b1d4bb?q=80&w=800&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1604335399105-a0c585fd81a1?q=80&w=800&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1582686115712-a74da4121ea2?q=80&w=800&auto=format&fit=crop"
     ];
 
     const heroImages = [
@@ -69,7 +103,7 @@ const App = () => {
         setIsSubmitting(true);
         
         try {
-            const response = await fetch('http://localhost:5000/api/bookings', {
+            const response = await fetch('http://localhost:8000/api/bookings', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData),
@@ -79,7 +113,7 @@ const App = () => {
                 setBookingSuccess(true);
                 
                 // Reset form
-                setFormData({ name: '', phone: '', service: 'Dry Cleaning', date: '', time: '', address: '', instructions: '' });
+                setFormData({ name: '', phone: '', service: 'Dry Cleaning', date: '', time: '', address: '', instructions: '', paymentMethod: 'Cash on Delivery' });
                 setTimeout(() => setBookingSuccess(false), 5000);
             } else {
                 alert('Failed to save booking. Please try again.');
@@ -124,11 +158,11 @@ const App = () => {
                 <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
                     <span className="font-semibold tracking-widest text-brand-200">|| Jai Maa Harsiddhi ||</span>
                     <div className="flex items-center gap-6">
-                        <a href="tel:9406585448" className="flex items-center gap-2 hover:text-brand-300 transition-colors">
-                            <Phone size={14} /> 9406585448
+                        <a href={`tel:${settings.phone}`} className="flex items-center gap-2 hover:text-brand-300 transition-colors">
+                            <Phone size={14} /> {settings.phone}
                         </a>
-                        <a href="https://wa.me/918871702059" target="_blank" rel="noreferrer" className="flex items-center gap-2 text-water-100 hover:text-white transition-colors font-medium">
-                            <MessageCircle size={14} /> 8871702059
+                        <a href={`https://wa.me/91${settings.whatsapp}`} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-water-100 hover:text-white transition-colors font-medium">
+                            <MessageCircle size={14} /> {settings.whatsapp}
                         </a>
                     </div>
                 </div>
@@ -147,7 +181,7 @@ const App = () => {
                             </div>
                             <div>
                                 <h1 className="font-extrabold text-2xl tracking-tight text-slate-900 leading-none">
-                                    Clean & Care
+                                    {settings.businessName}
                                 </h1>
                                 <span className="text-xs font-bold tracking-[0.2em] text-brand-600 uppercase">Laundry</span>
                             </div>
@@ -159,7 +193,7 @@ const App = () => {
                             <a href="#contact" className="text-sm font-semibold text-slate-600 hover:text-brand-600 transition-colors">Contact</a>
                         </div>
                         <div className="hidden sm:flex items-center gap-3">
-                            <a href="https://wa.me/918871702059" target="_blank" rel="noreferrer" className="flex bg-green-500 text-white px-5 py-3 rounded-full font-bold hover:bg-green-600 transition-all shadow-xl hover:shadow-green-500/25 hover:-translate-y-0.5 items-center gap-2">
+                            <a href={`https://wa.me/91${settings.whatsapp}`} target="_blank" rel="noreferrer" className="flex bg-green-500 text-white px-5 py-3 rounded-full font-bold hover:bg-green-600 transition-all shadow-xl hover:shadow-green-500/25 hover:-translate-y-0.5 items-center gap-2">
                                 <MessageCircle size={18} /> WhatsApp
                             </a>
                             <a href="#booking" className="flex bg-slate-900 text-white px-6 py-3 rounded-full font-bold hover:bg-brand-600 transition-all shadow-xl hover:shadow-brand-500/25 hover:-translate-y-0.5 items-center gap-2">
@@ -202,15 +236,15 @@ const App = () => {
                             </h2>
                             
                             <p className="text-lg md:text-xl text-slate-600 max-w-lg leading-relaxed font-medium">
-                                Your trusted place for all types of clothes, dry cleaning, roll press, and home cleaning. Managed by Prop. Dinesh Barentha.
+                                {settings.tagline}
                             </p>
                             
                             <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                                <a href="tel:9406585448" className="px-8 py-4 rounded-full bg-brand-600 text-white font-bold hover:bg-brand-700 transition-all shadow-xl hover:shadow-brand-600/40 text-center flex items-center justify-center gap-2 hover:-translate-y-1 group">
+                                <a href={`tel:${settings.phone}`} className="px-8 py-4 rounded-full bg-brand-600 text-white font-bold hover:bg-brand-700 transition-all shadow-xl hover:shadow-brand-600/40 text-center flex items-center justify-center gap-2 hover:-translate-y-1 group">
                                     <Phone size={20} className="group-hover:rotate-12 transition-transform" />
                                     Call Now
                                 </a>
-                                <a href="https://wa.me/918871702059" target="_blank" rel="noreferrer" className="px-8 py-4 rounded-full bg-white text-slate-800 border border-slate-200 font-bold hover:bg-slate-50 transition-all shadow-sm flex items-center justify-center gap-2 hover:-translate-y-1 group">
+                                <a href={`https://wa.me/91${settings.whatsapp}`} target="_blank" rel="noreferrer" className="px-8 py-4 rounded-full bg-white text-slate-800 border border-slate-200 font-bold hover:bg-slate-50 transition-all shadow-sm flex items-center justify-center gap-2 hover:-translate-y-1 group">
                                     <MessageCircle size={20} className="text-green-500 group-hover:scale-110 transition-transform" />
                                     WhatsApp Us
                                 </a>
@@ -348,29 +382,31 @@ const App = () => {
                         <h3 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-6">Our Gallery</h3>
                         <p className="text-lg text-slate-500 max-w-2xl mx-auto">A few glimpses of our excellent work.</p>
                     </div>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
-                        {galleryImages.slice(0, showAllGallery ? 6 : 3).map((src, idx) => (
+                    <div className="columns-2 md:columns-3 gap-4 md:gap-6 space-y-4 md:space-y-6">
+                        {galleryImages.slice(0, showAllGallery ? galleryImages.length : 6).map((src, idx) => (
                             <motion.div 
                                 key={idx}
                                 initial={{ opacity: 0, scale: 0.9 }}
                                 whileInView={{ opacity: 1, scale: 1 }}
                                 viewport={{ once: true }}
-                                transition={{ delay: (idx % 3) * 0.2 }}
+                                transition={{ delay: (idx % 3) * 0.15 }}
                                 onClick={() => setSelectedImage(src)}
-                                className="aspect-[4/5] rounded-3xl overflow-hidden shadow-lg group relative cursor-pointer"
+                                className="rounded-3xl overflow-hidden shadow-lg group relative cursor-pointer break-inside-avoid relative"
                             >
-                                <img src={src} alt="Gallery item" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out" />
+                                <img src={src} alt="Gallery item" className="w-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out" />
                             </motion.div>
                         ))}
                     </div>
-                    <div className="mt-12 text-center">
-                        <button 
-                            onClick={() => setShowAllGallery(!showAllGallery)}
-                            className="bg-white border-2 border-brand-600 text-brand-600 px-8 py-3 rounded-full font-bold hover:bg-brand-600 hover:text-white transition-all shadow-md hover:shadow-brand-500/25"
-                        >
-                            {showAllGallery ? "Show Less" : "View More"}
-                        </button>
-                    </div>
+                    {galleryImages.length > 6 && (
+                        <div className="mt-12 text-center">
+                            <button 
+                                onClick={() => setShowAllGallery(!showAllGallery)}
+                                className="bg-white border-2 border-brand-600 text-brand-600 px-8 py-3 rounded-full font-bold hover:bg-brand-600 hover:text-white transition-all shadow-md hover:shadow-brand-500/25"
+                            >
+                                {showAllGallery ? "Show Less" : "View More"}
+                            </button>
+                        </div>
+                    )}
                 </div>
 
                 {/* Lightbox Modal */}
@@ -537,6 +573,53 @@ const App = () => {
                                         placeholder="e.g. regarding stains on clothes..."
                                     />
                                 </div>
+
+                                <div>
+                                    <label className="block text-sm font-bold text-slate-700 mb-2">Payment Method</label>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        {settings.cashOnDelivery && (
+                                            <label className={`border rounded-xl p-4 flex items-center justify-center gap-2 cursor-pointer transition-all ${formData.paymentMethod === 'Cash on Delivery' ? 'border-brand-500 bg-brand-50 text-brand-700 font-bold' : 'border-slate-200 bg-slate-50 text-slate-600 font-medium hover:bg-slate-100'}`}>
+                                                <input 
+                                                    type="radio" 
+                                                    name="paymentMethod" 
+                                                    value="Cash on Delivery" 
+                                                    className="hidden"
+                                                    checked={formData.paymentMethod === 'Cash on Delivery'}
+                                                    onChange={(e) => setFormData({...formData, paymentMethod: e.target.value})}
+                                                />
+                                                Cash on Delivery
+                                            </label>
+                                        )}
+                                        {settings.upiPaymentEnabled && (
+                                            <label className={`border rounded-xl p-4 flex items-center justify-center gap-2 cursor-pointer transition-all ${formData.paymentMethod === 'UPI' ? 'border-brand-500 bg-brand-50 text-brand-700 font-bold' : 'border-slate-200 bg-slate-50 text-slate-600 font-medium hover:bg-slate-100'}`}>
+                                                <input 
+                                                    type="radio" 
+                                                    name="paymentMethod" 
+                                                    value="UPI" 
+                                                    className="hidden"
+                                                    checked={formData.paymentMethod === 'UPI'}
+                                                    onChange={(e) => setFormData({...formData, paymentMethod: e.target.value})}
+                                                />
+                                                UPI Payment
+                                            </label>
+                                        )}
+                                    </div>
+                                    
+                                    {formData.paymentMethod === 'UPI' && (
+                                        <div className="mt-4 p-5 rounded-xl bg-blue-50 border border-blue-100 flex flex-col items-center justify-center text-center">
+                                            {settings.qrCodeImage && (
+                                                <div className="w-40 h-40 bg-white p-2 rounded-xl shadow-sm border border-blue-200 mb-4">
+                                                    <img src={settings.qrCodeImage} alt="Pay via UPI" className="w-full h-full object-contain" />
+                                                </div>
+                                            )}
+                                            <p className="text-sm font-medium text-blue-800 mb-2">Please pay to the following UPI ID:</p>
+                                            <div className="bg-white px-4 py-2 rounded-lg font-bold text-lg text-slate-800 shadow-sm border border-slate-200 mb-2 select-all">
+                                                {settings.upiId || 'Not Setup Yet'}
+                                            </div>
+                                            <p className="text-xs text-blue-600 mt-2">Scan the QR code or copy the UPI ID above. Our delivery boy will verify the payment at pickup.</p>
+                                        </div>
+                                    )}
+                                </div>
                                 
                                 <button 
                                     type="submit" 
@@ -597,12 +680,12 @@ const App = () => {
                                     <Droplets size={24} />
                                 </div>
                                 <div>
-                                    <h4 className="font-extrabold text-2xl tracking-tight text-white">Clean & Care</h4>
+                                    <h4 className="font-extrabold text-2xl tracking-tight text-white">{settings.businessName}</h4>
                                     <span className="text-xs font-bold tracking-[0.2em] text-brand-400 uppercase">Laundry</span>
                                 </div>
                             </div>
                             <p className="text-slate-400 leading-relaxed text-sm">
-                                Your trusted dry cleaners and home cleaning experts. We make your clothes look brand new.
+                                {settings.tagline}
                             </p>
                             <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl inline-block mt-2">
                                 <p className="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">Proprietor</p>
@@ -640,22 +723,22 @@ const App = () => {
                                 Contact Us
                             </h5>
                             <div className="space-y-4">
-                                <a href="tel:9406585448" className="flex items-start gap-4 text-slate-400 hover:text-brand-400 transition-colors group">
+                                <a href={`tel:${settings.phone}`} className="flex items-start gap-4 text-slate-400 hover:text-brand-400 transition-colors group">
                                     <div className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center group-hover:bg-brand-900/50 transition-colors flex-shrink-0 border border-slate-800 group-hover:border-brand-500/50">
                                         <Phone size={18} />
                                     </div>
                                     <div>
                                         <p className="text-xs text-slate-500 font-medium mb-0.5">Call Us</p>
-                                        <span className="font-semibold text-sm">9406585448</span>
+                                        <span className="font-semibold text-sm">{settings.phone}</span>
                                     </div>
                                 </a>
-                                <a href="https://wa.me/918871702059" target="_blank" rel="noreferrer" className="flex items-start gap-4 text-slate-400 hover:text-green-400 transition-colors group">
+                                <a href={`https://wa.me/91${settings.whatsapp}`} target="_blank" rel="noreferrer" className="flex items-start gap-4 text-slate-400 hover:text-green-400 transition-colors group">
                                     <div className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center group-hover:bg-green-900/30 transition-colors flex-shrink-0 border border-slate-800 group-hover:border-green-500/50">
                                         <MessageCircle size={18} />
                                     </div>
                                     <div>
                                         <p className="text-xs text-slate-500 font-medium mb-0.5">WhatsApp</p>
-                                        <span className="font-semibold text-sm">8871702059</span>
+                                        <span className="font-semibold text-sm">{settings.whatsapp}</span>
                                     </div>
                                 </a>
                             </div>
@@ -672,9 +755,8 @@ const App = () => {
                                     <div className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center flex-shrink-0 text-brand-400 border border-slate-800">
                                         <MapPin size={18} />
                                     </div>
-                                    <p className="text-sm font-medium leading-relaxed pt-1">
-                                        BTI Road, Near CM House,<br/>
-                                        Sherpura, Vidisha (M.P.)
+                                    <p className="text-sm font-medium leading-relaxed pt-1" style={{ whiteSpace: 'pre-line' }}>
+                                        {settings.address}
                                     </p>
                                 </div>
                                 
@@ -694,7 +776,7 @@ const App = () => {
                     
                     <div className="border-t border-slate-800/80 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
                         <div className="text-slate-500 text-sm font-medium">
-                            &copy; {new Date().getFullYear()} Clean & Care Laundry, Vidisha. All rights reserved.
+                            &copy; {new Date().getFullYear()} {settings.businessName}. All rights reserved.
                         </div>
                         <div className="flex gap-6 text-sm font-semibold text-slate-500">
                             <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
@@ -705,6 +787,15 @@ const App = () => {
             </footer>
         </div>
     );
+};
+
+const App = () => {
+  return (
+    <Routes>
+      <Route path="/*" element={<MainWebsite />} />
+      <Route path="/admin/*" element={<AdminApp />} />
+    </Routes>
+  );
 };
 
 export default App;
