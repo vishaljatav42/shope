@@ -1259,11 +1259,11 @@ const MainWebsite = () => {
                                     <div className="space-y-3">
                                         <div>
                                             <p className="text-xs text-slate-500 font-medium">Phone</p>
-                                            <p className="text-sm font-bold text-slate-800">{customerProfileData.phone || 'Not added'}</p>
+                                            <p className="text-sm font-bold text-slate-800">{customerProfileData.phone || customerProfileData.bookings?.[0]?.phone || 'Not added'}</p>
                                         </div>
                                         <div>
                                             <p className="text-xs text-slate-500 font-medium">Default Address</p>
-                                            <p className="text-sm font-bold text-slate-800 break-words">{customerProfileData.address?.fullAddress || 'Not added'}</p>
+                                            <p className="text-sm font-bold text-slate-800 break-words">{customerProfileData.address?.fullAddress || customerProfileData.bookings?.[0]?.address || 'Not added'}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -1276,13 +1276,13 @@ const MainWebsite = () => {
                                         <div>
                                             <p className="text-xs text-slate-500 font-medium">Total Paid</p>
                                             <p className="text-lg font-bold text-emerald-600">
-                                                ₹{customerProfileData.bookings?.filter(b => b.paymentStatus === 'Paid' && b.status !== 'Cancelled').reduce((sum, b) => sum + (b.totalAmount || 0), 0) || 0}
+                                                ₹{customerProfileData.bookings?.filter(b => b.paymentStatus === 'Paid' && b.status !== 'Cancelled').reduce((sum, b) => sum + (Number(b.totalAmount) || 0), 0) || 0}
                                             </p>
                                         </div>
                                         <div>
                                             <p className="text-xs text-slate-500 font-medium">Pending</p>
                                             <p className="text-lg font-bold text-rose-600">
-                                                ₹{customerProfileData.bookings?.filter(b => b.paymentStatus === 'Pending' && b.status !== 'Cancelled').reduce((sum, b) => sum + (b.totalAmount || 0), 0) || 0}
+                                                ₹{customerProfileData.bookings?.filter(b => (!b.paymentStatus || b.paymentStatus === 'Pending') && b.status !== 'Cancelled').reduce((sum, b) => sum + (Number(b.totalAmount) || 0), 0) || 0}
                                             </p>
                                         </div>
                                     </div>

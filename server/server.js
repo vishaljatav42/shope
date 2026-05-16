@@ -36,6 +36,19 @@ app.post('/api/bookings', async (req, res) => {
         const newBooking = new Booking(req.body);
         const savedBooking = await newBooking.save();
         
+        // Update customer profile data if missing
+        if (req.body.email) {
+            await Customer.findOneAndUpdate(
+                { email: req.body.email },
+                { 
+                    $set: { 
+                        phone: req.body.phone,
+                        'address.fullAddress': req.body.address
+                    }
+                }
+            );
+        }
+        
         console.log('New booking saved:', savedBooking);
         res.status(201).json({ success: true, message: 'Booking saved successfully!', data: savedBooking });
     } catch (error) {
