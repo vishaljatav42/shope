@@ -1067,9 +1067,10 @@ const MainWebsite = () => {
                         <button onClick={() => setShowPromoPopup(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors bg-slate-50 hover:bg-slate-100 rounded-full p-1 z-10">
                             <X size={20} />
                         </button>
-                        <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-5 text-emerald-600 shadow-inner">
-                            <Sparkles size={40} />
+                        <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-3 text-emerald-600 shadow-inner">
+                            <Shirt size={32} />
                         </div>
+                        <h2 className="text-xl font-black text-slate-800 tracking-tight mb-4">Clean <span className="text-emerald-600">&</span> Care</h2>
                         <h3 className="text-3xl font-black text-slate-800 mb-2 tracking-tight">10% OFF</h3>
                         <p className="text-slate-700 font-bold text-lg mb-2">On All Prepaid Orders!</p>
                         <p className="text-sm text-slate-500 mb-8 leading-relaxed font-medium">Select <span className="font-bold text-slate-700">UPI</span> as your payment method at checkout to automatically get a flat 10% discount on your entire bill.</p>
