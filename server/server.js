@@ -230,7 +230,7 @@ app.post('/api/auth/verify-otp', async (req, res) => {
         // Generate Token
         const token = jwt.sign({ id: customer._id, email: customer.email }, JWT_SECRET, { expiresIn: '7d' });
 
-        res.status(200).json({ success: true, token, customer: { email: customer.email, name: customer.name, phone: customer.phone } });
+        res.status(200).json({ success: true, token, customer: { id: customer._id, email: customer.email, name: customer.name, phone: customer.phone } });
     } catch (error) {
         console.error('Verify OTP error:', error);
         res.status(500).json({ error: 'Failed to verify OTP' });
@@ -256,7 +256,13 @@ app.get('/api/customers', async (req, res) => {
 // 2. Get single customer by ID + their bookings
 app.get('/api/customers/:id', async (req, res) => {
     try {
-        const customer = await Customer.findById(req.params.id).lean();
+        let customer;
+        if (req.params.id.includes('@')) {
+            customer = await Customer.findOne({ email: req.params.id }).lean();
+        } else {
+            customer = await Customer.findById(req.params.id).lean();
+        }
+        
         if (!customer) return res.status(404).json({ error: 'Customer not found' });
 
         // Fetch all bookings for this customer email

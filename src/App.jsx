@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Shirt, Sparkles, Sofa, Footprints, Phone, MessageCircle, MapPin, Droplets, ArrowRight, CheckCircle2, Clock, X } from 'lucide-react';
+import { Shirt, Sparkles, Sofa, Footprints, Phone, MessageCircle, MapPin, Droplets, ArrowRight, CheckCircle2, Clock, X, Users, Settings, CalendarCheck } from 'lucide-react';
 
 import { Routes, Route } from 'react-router-dom';
 import AdminApp from './AdminApp';
@@ -35,6 +35,31 @@ const MainWebsite = () => {
     const [otp, setOtp] = useState('');
     const [otpSent, setOtpSent] = useState(false);
     const [authLoading, setAuthLoading] = useState(false);
+    
+    // Customer Profile Portal State
+    const [showProfileModal, setShowProfileModal] = useState(false);
+    const [customerProfileData, setCustomerProfileData] = useState(null);
+    const [loadingProfile, setLoadingProfile] = useState(false);
+
+    const loadCustomerProfile = async () => {
+        if (!customer) return;
+        setLoadingProfile(true);
+        try {
+            const identifier = customer.id || customer.email;
+            const res = await fetch(`http://localhost:8000/api/customers/${identifier}`);
+            if (res.ok) {
+                const data = await res.json();
+                setCustomerProfileData(data);
+                setShowProfileModal(true);
+            }
+        } catch (error) {
+            console.error("Failed to load profile", error);
+            alert("Failed to load profile data.");
+        } finally {
+            setLoadingProfile(false);
+        }
+    };
+
     const [settings, setSettings] = useState({
         businessName: 'Clean & Care Laundry',
         tagline: 'Premium Laundry Services in Vidisha',
@@ -352,10 +377,14 @@ const MainWebsite = () => {
                             <div className="w-px h-4 bg-slate-300 mx-2"></div>
                             {customer ? (
                                 <div className="flex items-center gap-3">
-                                    <span className="text-brand-600 font-bold bg-white/80 border border-brand-100 px-3 py-1.5 rounded-full text-sm flex items-center gap-2">
-                                        <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
-                                        {customer.email.split('@')[0]}
-                                    </span>
+                                    <button 
+                                        onClick={loadCustomerProfile}
+                                        disabled={loadingProfile}
+                                        className="text-brand-600 font-bold bg-white/80 border border-brand-100 px-4 py-2 rounded-full text-sm flex items-center gap-2 hover:bg-white hover:shadow-sm transition-all"
+                                    >
+                                        <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                                        {loadingProfile ? 'Loading...' : 'My Profile'}
+                                    </button>
                                     <button onClick={handleLogout} className="text-slate-500 hover:text-rose-500 text-sm font-bold transition-colors">Logout</button>
                                 </div>
                             ) : (
@@ -1040,6 +1069,110 @@ const MainWebsite = () => {
                             <button onClick={() => setOtpSent(false)} className="w-full text-sm text-brand-600 font-bold mt-3 hover:underline">Change Email Address</button>
                         </div>
                     )}
+                </div>
+            </div>
+        )}
+        {showProfileModal && customerProfileData && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 overflow-y-auto">
+                <div className="bg-white rounded-3xl w-full max-w-3xl shadow-2xl relative animate-fade-in my-8 overflow-hidden flex flex-col max-h-[90vh]">
+                    <div className="bg-brand-600 p-6 sm:p-8 text-white relative shrink-0">
+                        <button onClick={() => setShowProfileModal(false)} className="absolute top-6 right-6 text-brand-200 hover:text-white transition-colors bg-white/10 hover:bg-white/20 rounded-full p-2">
+                            <X size={20} />
+                        </button>
+                        <div className="flex items-center gap-4">
+                            <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center text-2xl font-extrabold border-2 border-white/40">
+                                {customerProfileData.email[0].toUpperCase()}
+                            </div>
+                            <div>
+                                <h3 className="text-2xl font-bold">{customerProfileData.name || 'Welcome Back!'}</h3>
+                                <p className="text-brand-100">{customerProfileData.email}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div className="p-6 sm:p-8 overflow-y-auto bg-slate-50 flex-1">
+                        <div className="grid md:grid-cols-3 gap-8">
+                            <div className="md:col-span-1 space-y-6">
+                                <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+                                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4 flex items-center gap-2">
+                                        <Users size={14} /> Basic Details
+                                    </h4>
+                                    <div className="space-y-3">
+                                        <div>
+                                            <p className="text-xs text-slate-500 font-medium">Phone</p>
+                                            <p className="text-sm font-bold text-slate-800">{customerProfileData.phone || 'Not added'}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-slate-500 font-medium">Default Address</p>
+                                            <p className="text-sm font-bold text-slate-800 break-words">{customerProfileData.address?.fullAddress || 'Not added'}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+                                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4 flex items-center gap-2">
+                                        <Settings size={14} /> My Preferences
+                                    </h4>
+                                    {customerProfileData.preferences ? (
+                                        <div className="flex flex-wrap gap-2">
+                                            {Object.entries(customerProfileData.preferences).filter(([k,v]) => v).map(([key]) => (
+                                                <span key={key} className="bg-brand-50 text-brand-600 text-xs font-bold px-2 py-1 rounded-md capitalize border border-brand-100">
+                                                    {key.replace(/([A-Z])/g, ' $1').trim()}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <p className="text-sm text-slate-500">No preferences saved.</p>
+                                    )}
+                                </div>
+                            </div>
+                            
+                            <div className="md:col-span-2">
+                                <h4 className="text-lg font-extrabold text-slate-800 mb-4 flex items-center gap-2">
+                                    <CalendarCheck size={20} className="text-brand-500" /> Order History
+                                </h4>
+                                
+                                <div className="space-y-4">
+                                    {customerProfileData.bookings && customerProfileData.bookings.length > 0 ? (
+                                        customerProfileData.bookings.map((booking, idx) => (
+                                            <div key={idx} className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 hover:border-brand-300 transition-all group">
+                                                <div className="flex justify-between items-start mb-4 border-b border-slate-50 pb-4">
+                                                    <div>
+                                                        <span className="text-xs font-bold text-brand-600 bg-brand-50 px-2 py-1 rounded-md">Order #{booking._id.slice(-6).toUpperCase()}</span>
+                                                        <p className="text-xs font-medium text-slate-500 mt-2">{booking.date} at {booking.time}</p>
+                                                    </div>
+                                                    <span className={`text-xs font-bold px-3 py-1.5 rounded-full ${
+                                                        booking.status === 'Completed' ? 'bg-emerald-100 text-emerald-700' :
+                                                        booking.status === 'Cancelled' ? 'bg-rose-100 text-rose-700' :
+                                                        'bg-amber-100 text-amber-700'
+                                                    }`}>{booking.status}</span>
+                                                </div>
+                                                <div className="flex flex-wrap gap-2 mb-4">
+                                                    {booking.items?.map((item, i) => (
+                                                        <span key={i} className="text-xs font-medium text-slate-600 bg-slate-50 border border-slate-200 px-2.5 py-1.5 rounded-lg">
+                                                            {item.name} <span className="font-extrabold text-slate-800 ml-1">x{item.quantity}</span>
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Amount</span>
+                                                    <span className="text-lg font-black text-slate-900">₹{booking.totalAmount}</span>
+                                                </div>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="text-center py-12 bg-white rounded-2xl border border-slate-100 border-dashed">
+                                            <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-300">
+                                                <CalendarCheck size={24} />
+                                            </div>
+                                            <h5 className="font-bold text-slate-700">No Orders Yet</h5>
+                                            <p className="text-sm text-slate-500 mt-1">You haven't placed any laundry orders with us.</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         )}
