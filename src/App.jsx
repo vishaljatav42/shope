@@ -647,33 +647,7 @@ const MainWebsite = () => {
                                             <div className="bg-white px-4 py-2 rounded-lg font-bold text-lg text-slate-800 shadow-sm border border-slate-200 mb-2 select-all">
                                                 {settings.upiId || 'Not Setup Yet'}
                                             </div>
-                                            {settings.upiId && (
-                                                <div className="mt-3 w-full">
-                                                    <p className="text-xs text-slate-500 font-bold mb-2 uppercase tracking-wide">Direct Pay (Mobile Only)</p>
-                                                    <div className="flex flex-col sm:flex-row gap-2 w-full justify-center">
-                                                        <a 
-                                                            href={`tez://upi/pay?pa=${settings.upiId}&pn=${encodeURIComponent(settings.businessName || 'Clean and Care Laundry')}&cu=INR`} 
-                                                            className="flex-1 bg-white border border-slate-200 hover:border-blue-500 hover:bg-blue-50 text-slate-800 font-bold py-2.5 px-3 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2"
-                                                        >
-                                                            <img src="https://upload.wikimedia.org/wikipedia/commons/f/f2/Google_Pay_Logo.svg" alt="GPay" className="h-4" />
-                                                        </a>
-                                                        <a 
-                                                            href={`phonepe://pay?pa=${settings.upiId}&pn=${encodeURIComponent(settings.businessName || 'Clean and Care Laundry')}&cu=INR`} 
-                                                            className="flex-1 bg-white border border-slate-200 hover:border-purple-500 hover:bg-purple-50 text-slate-800 font-bold py-2.5 px-3 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2"
-                                                        >
-                                                            <img src="https://download.logo.wine/logo/PhonePe/PhonePe-Logo.wine.png" alt="PhonePe" className="h-6 object-cover" />
-                                                        </a>
-                                                        <a 
-                                                            href={`paytmmp://pay?pa=${settings.upiId}&pn=${encodeURIComponent(settings.businessName || 'Clean and Care Laundry')}&cu=INR`} 
-                                                            className="flex-1 bg-white border border-slate-200 hover:border-sky-500 hover:bg-sky-50 text-slate-800 font-bold py-2.5 px-3 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2"
-                                                        >
-                                                            <img src="https://upload.wikimedia.org/wikipedia/commons/2/24/Paytm_Logo_%28standalone%29.svg" alt="Paytm" className="h-3" />
-                                                        </a>
-                                                    </div>
-                                                </div>
-                                            )}
-                                            
-                                            <p className="text-xs text-blue-600 mt-4">Scan the QR code, copy the ID, or click your app above.</p>
+                                            <p className="text-xs text-blue-600 mt-2">Scan the QR code or copy the UPI ID above. Our delivery boy will verify the payment at pickup.</p>
                                             
                                             <div className="mt-6 w-full text-left">
                                                 <label className="block text-sm font-bold text-slate-700 mb-2">Upload Payment Screenshot *</label>
