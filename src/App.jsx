@@ -1329,20 +1329,30 @@ const MainWebsite = () => {
                                                 
                                                 {!['Completed', 'Cancelled'].includes(booking.status) && (
                                                     <div className="mb-6 relative">
-                                                        <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-slate-100">
+                                                        <div className="overflow-hidden h-2 mb-2 text-xs flex rounded-full bg-slate-100">
                                                             <div style={{ width: `${
-                                                                booking.status === 'Pending' ? '15%' :
-                                                                booking.status === 'Confirmed' ? '30%' :
-                                                                booking.status === 'Picked Up' ? '50%' :
-                                                                booking.status === 'Washing' ? '65%' :
-                                                                booking.status === 'Ironing' ? '80%' :
-                                                                booking.status === 'Out For Delivery' ? '95%' : '0%'
-                                                            }` }} className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-brand-500 transition-all duration-500"></div>
+                                                                booking.status === 'Pending' ? '0%' :
+                                                                booking.status === 'Confirmed' ? '12%' :
+                                                                booking.status === 'Picked Up' ? '25%' :
+                                                                booking.status === 'Washing' ? '50%' :
+                                                                booking.status === 'Ironing' ? '75%' :
+                                                                booking.status === 'Out For Delivery' ? '100%' : '0%'
+                                                            }` }} className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-brand-500 transition-all duration-500 rounded-full"></div>
                                                         </div>
-                                                        <div className="flex justify-between text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
-                                                            <span className={['Pending', 'Confirmed', 'Picked Up', 'Washing', 'Ironing', 'Out For Delivery'].includes(booking.status) ? 'text-brand-600' : ''}>Picked Up</span>
-                                                            <span className={['Washing', 'Ironing', 'Out For Delivery'].includes(booking.status) ? 'text-brand-600' : ''}>Washing</span>
-                                                            <span className={['Out For Delivery'].includes(booking.status) ? 'text-brand-600' : ''}>Out For Delivery</span>
+                                                        <div className="flex justify-between text-[8px] sm:text-[9px] font-extrabold text-slate-400 uppercase tracking-wider relative px-1">
+                                                            {(() => {
+                                                                const stages = ['Pending', 'Confirmed', 'Picked Up', 'Washing', 'Ironing', 'Out For Delivery', 'Completed'];
+                                                                const currentIdx = stages.indexOf(booking.status);
+                                                                return (
+                                                                    <>
+                                                                        <span className={`w-1/5 text-left ${currentIdx >= 0 ? 'text-brand-600' : ''}`}>Pending</span>
+                                                                        <span className={`w-1/5 text-center ${currentIdx >= 2 ? 'text-brand-600' : ''}`}>Picked Up</span>
+                                                                        <span className={`w-1/5 text-center ${currentIdx >= 3 ? 'text-brand-600' : ''}`}>Washing</span>
+                                                                        <span className={`w-1/5 text-center ${currentIdx >= 4 ? 'text-brand-600' : ''}`}>Ironing</span>
+                                                                        <span className={`w-1/5 text-right ${currentIdx >= 5 ? 'text-brand-600' : ''}`}>Delivery</span>
+                                                                    </>
+                                                                )
+                                                            })()}
                                                         </div>
                                                     </div>
                                                 )}

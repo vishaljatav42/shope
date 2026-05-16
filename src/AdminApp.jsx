@@ -54,8 +54,9 @@ function AdminApp() {
           {activeTab === 'bookings' && <Dashboard />}
           {activeTab === 'customers' && <CustomersManager />}
           {activeTab === 'services' && <ServicesManager />}
+          {activeTab === 'notifications' && <NotificationsManager />}
           {activeTab === 'settings' && <SettingsManager onThemeChange={setIsDarkMode} />}
-          {activeTab !== 'dashboard' && activeTab !== 'bookings' && activeTab !== 'customers' && activeTab !== 'services' && activeTab !== 'settings' && (
+          {activeTab !== 'dashboard' && activeTab !== 'bookings' && activeTab !== 'customers' && activeTab !== 'services' && activeTab !== 'notifications' && activeTab !== 'settings' && (
             <div className="empty-state animate-fade-in">
               <h2>Module In Development</h2>
               <p>This premium feature is scheduled for Phase 3 of the system upgrade.</p>
