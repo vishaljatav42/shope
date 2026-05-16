@@ -21,6 +21,7 @@ const MainWebsite = () => {
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [bookingSuccess, setBookingSuccess] = useState(false);
+    const [paymentScreenshot, setPaymentScreenshot] = useState('');
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [selectedImage, setSelectedImage] = useState(null);
     const [dbServices, setDbServices] = useState([]);
@@ -43,7 +44,18 @@ const MainWebsite = () => {
                 const res = await fetch('http://localhost:8000/api/settings');
                 if (res.ok) {
                     const data = await res.json();
-                    if (data) setSettings(data);
+                    if (data) {
+                        setSettings(data);
+                        setFormData(prev => {
+                            if (!data.cashOnDelivery && data.upiPaymentEnabled) {
+                                return { ...prev, paymentMethod: 'UPI' };
+                            }
+                            if (!data.upiPaymentEnabled && data.cashOnDelivery) {
+                                return { ...prev, paymentMethod: 'Cash on Delivery' };
+                            }
+                            return prev;
+                        });
+                    }
                 }
             } catch (error) {
                 console.error('Failed to load settings:', error);
@@ -106,15 +118,18 @@ const MainWebsite = () => {
         try {
             const response = await fetch('http://localhost:8000/api/bookings', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData),
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ ...formData, paymentScreenshot }),
             });
             
             if (response.ok) {
                 setBookingSuccess(true);
                 
                 // Reset form
-                setFormData({ name: '', phone: '', service: 'Dry Cleaning', date: '', time: '', address: '', instructions: '', paymentMethod: 'Cash on Delivery', paymentScreenshot: '' });
+                setFormData({ name: '', phone: '', service: 'Dry Cleaning', date: '', time: '', address: '', instructions: '', paymentMethod: 'Cash on Delivery' });
+                setPaymentScreenshot('');
                 setTimeout(() => setBookingSuccess(false), 5000);
             } else {
                 alert('Failed to save booking. Please try again.');
@@ -136,7 +151,7 @@ const MainWebsite = () => {
             }
             const reader = new FileReader();
             reader.onloadend = () => {
-                setFormData(prev => ({ ...prev, paymentScreenshot: reader.result }));
+                setPaymentScreenshot(reader.result);
             };
             reader.readAsDataURL(file);
         }
@@ -643,7 +658,7 @@ const MainWebsite = () => {
                                                     required={formData.paymentMethod === 'UPI'}
                                                     className="w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-700 file:cursor-pointer cursor-pointer border border-blue-200 rounded-xl bg-white focus:outline-none"
                                                 />
-                                                {formData.paymentScreenshot && (
+                                                {paymentScreenshot && (
                                                     <div className="mt-3 text-xs font-bold text-emerald-600 flex items-center gap-1">
                                                         <CheckCircle2 size={14} /> Screenshot attached successfully
                                                     </div>

@@ -182,8 +182,7 @@
 
 .metric-card {
   background: var(--glass-bg);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  /* Removed backdrop-filter to fix severe UI lag */
   border: 1px solid var(--glass-border);
   border-radius: 20px;
   padding: 28px;
@@ -274,9 +273,7 @@
 /* Glass Panel for Table */
 .glass-panel {
   background: var(--glass-bg);
-  /* Reduced blur for performance */
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  /* Removed blur to fix severe UI lag */
   border: 1px solid var(--glass-border);
   border-radius: 24px;
   box-shadow: var(--card-shadow);
@@ -433,7 +430,6 @@
   background-color: var(--glass-bg);
   border: 1px solid var(--border-color);
   color: var(--text-primary);
-  backdrop-filter: blur(10px);
 }
 
 .btn-outline:hover {
