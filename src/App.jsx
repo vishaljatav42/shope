@@ -375,9 +375,10 @@ const MainWebsite = () => {
                                 </div>
                             </div>
                             <div className="flex flex-col justify-center">
-                                <h1 className="font-extrabold text-xl sm:text-2xl tracking-[0.1em] text-brand-600 leading-none uppercase">
-                                    Clean <span className="text-slate-800">&</span> Care
+                                <h1 className="font-extrabold text-xl sm:text-2xl tracking-tight text-slate-900 leading-none">
+                                    Clean <span className="text-brand-600">&</span> Care
                                 </h1>
+                                <span className="text-[10px] sm:text-xs font-bold tracking-[0.2em] text-slate-500 uppercase mt-1">Laundry</span>
                             </div>
                         </div>
                         <div className="hidden lg:flex space-x-6 items-center bg-white/50 backdrop-blur-md px-8 py-3 rounded-full border border-white shadow-sm">
