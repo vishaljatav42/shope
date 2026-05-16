@@ -133,6 +133,7 @@ app.put('/api/settings', async (req, res) => {
         await settings.save();
         res.status(200).json({ success: true, data: settings });
     } catch (error) {
+        console.error('Settings update error:', error);
         res.status(500).json({ error: 'Failed to update settings' });
     }
 });

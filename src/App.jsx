@@ -647,7 +647,18 @@ const MainWebsite = () => {
                                             <div className="bg-white px-4 py-2 rounded-lg font-bold text-lg text-slate-800 shadow-sm border border-slate-200 mb-2 select-all">
                                                 {settings.upiId || 'Not Setup Yet'}
                                             </div>
-                                            <p className="text-xs text-blue-600 mt-2">Scan the QR code or copy the UPI ID above. Our delivery boy will verify the payment at pickup.</p>
+                                            
+                                            {settings.upiId && (
+                                                <a 
+                                                    href={`upi://pay?pa=${settings.upiId}&pn=${encodeURIComponent(settings.businessName || 'Clean and Care Laundry')}&cu=INR`} 
+                                                    className="mt-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-xl shadow-md shadow-blue-500/30 transition-all flex items-center gap-2 mb-1"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2" ry="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
+                                                    Pay Direct via UPI App
+                                                </a>
+                                            )}
+                                            
+                                            <p className="text-xs text-blue-600 mt-2">Scan the QR code, copy the ID, or click "Pay Direct" (Mobile only).</p>
                                             
                                             <div className="mt-6 w-full text-left">
                                                 <label className="block text-sm font-bold text-slate-700 mb-2">Upload Payment Screenshot *</label>
