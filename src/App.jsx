@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Shirt, Sparkles, Sofa, Footprints, Phone, MessageCircle, MapPin, Droplets, ArrowRight, CheckCircle2, Clock } from 'lucide-react';
+import { Shirt, Sparkles, Sofa, Footprints, Phone, MessageCircle, MapPin, Droplets, ArrowRight, CheckCircle2, Clock, X } from 'lucide-react';
 
 import { Routes, Route } from 'react-router-dom';
 import AdminApp from './AdminApp';
@@ -21,11 +21,20 @@ const MainWebsite = () => {
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [bookingSuccess, setBookingSuccess] = useState(false);
+    const [isServicesOpen, setIsServicesOpen] = useState(false);
     const [paymentScreenshot, setPaymentScreenshot] = useState('');
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [selectedImage, setSelectedImage] = useState(null);
     const [dbServices, setDbServices] = useState([]);
     const [isLoadingServices, setIsLoadingServices] = useState(true);
+    
+    // Auth State
+    const [customer, setCustomer] = useState(null);
+    const [showLoginModal, setShowLoginModal] = useState(false);
+    const [loginEmail, setLoginEmail] = useState('');
+    const [otp, setOtp] = useState('');
+    const [otpSent, setOtpSent] = useState(false);
+    const [authLoading, setAuthLoading] = useState(false);
     const [settings, setSettings] = useState({
         businessName: 'Clean & Care Laundry',
         tagline: 'Premium Laundry Services in Vidisha',
@@ -98,6 +107,12 @@ const MainWebsite = () => {
             }
         };
         fetchServices();
+        
+        // Load customer from local storage
+        const storedCustomer = localStorage.getItem('shope_customer');
+        if (storedCustomer) {
+            setCustomer(JSON.parse(storedCustomer));
+        }
     }, []);
 
     const galleryImages = [
@@ -133,6 +148,12 @@ const MainWebsite = () => {
             alert('Please select at least one service by adding quantities.');
             return;
         }
+        
+        if (!customer) {
+            setShowLoginModal(true);
+            return;
+        }
+        
         setIsSubmitting(true);
         
         const payload = {
@@ -202,6 +223,65 @@ const MainWebsite = () => {
         });
     };
 
+    const handleSendOtp = async () => {
+        setAuthLoading(true);
+        try {
+            const res = await fetch('http://localhost:8000/api/auth/send-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: loginEmail })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                setOtpSent(true);
+            } else {
+                alert(data.error || 'Failed to send OTP');
+            }
+        } catch (error) {
+            alert('Server error while sending OTP');
+        } finally {
+            setAuthLoading(false);
+        }
+    };
+
+    const handleVerifyOtp = async () => {
+        setAuthLoading(true);
+        try {
+            const res = await fetch('http://localhost:8000/api/auth/verify-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: loginEmail, otp })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                setCustomer(data.customer);
+                localStorage.setItem('shope_customer', JSON.stringify(data.customer));
+                localStorage.setItem('shope_token', data.token);
+                setShowLoginModal(false);
+                setOtpSent(false);
+                setOtp('');
+                
+                // If they have items in cart, they might want to continue booking
+                if (formData.items.length > 0) {
+                    // We don't auto-submit to let them review, or we could.
+                    // Leaving it manual is safer.
+                }
+            } else {
+                alert(data.error || 'Invalid OTP');
+            }
+        } catch (error) {
+            alert('Server error while verifying OTP');
+        } finally {
+            setAuthLoading(false);
+        }
+    };
+
+    const handleLogout = () => {
+        setCustomer(null);
+        localStorage.removeItem('shope_customer');
+        localStorage.removeItem('shope_token');
+    };
+
     useEffect(() => {
         const handleScroll = () => setScrolled(window.scrollY > 20);
         window.addEventListener('scroll', handleScroll);
@@ -262,11 +342,23 @@ const MainWebsite = () => {
                                 <span className="text-xs font-bold tracking-[0.2em] text-brand-600 uppercase">Laundry</span>
                             </div>
                         </div>
-                        <div className="hidden lg:flex space-x-8 items-center bg-white/50 backdrop-blur-md px-8 py-3 rounded-full border border-white shadow-sm">
+                        <div className="hidden lg:flex space-x-6 items-center bg-white/50 backdrop-blur-md px-8 py-3 rounded-full border border-white shadow-sm">
                             <a href="#services" className="text-sm font-semibold text-slate-600 hover:text-brand-600 transition-colors">Services</a>
                             <a href="#pricing" className="text-sm font-semibold text-slate-600 hover:text-brand-600 transition-colors">Pricing</a>
                             <a href="#gallery" className="text-sm font-semibold text-slate-600 hover:text-brand-600 transition-colors">Gallery</a>
                             <a href="#contact" className="text-sm font-semibold text-slate-600 hover:text-brand-600 transition-colors">Contact</a>
+                            <div className="w-px h-4 bg-slate-300 mx-2"></div>
+                            {customer ? (
+                                <div className="flex items-center gap-3">
+                                    <span className="text-brand-600 font-bold bg-white/80 border border-brand-100 px-3 py-1.5 rounded-full text-sm flex items-center gap-2">
+                                        <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                                        {customer.email.split('@')[0]}
+                                    </span>
+                                    <button onClick={handleLogout} className="text-slate-500 hover:text-rose-500 text-sm font-bold transition-colors">Logout</button>
+                                </div>
+                            ) : (
+                                <button onClick={() => setShowLoginModal(true)} className="text-sm font-bold text-brand-600 hover:text-brand-700 transition-colors">Login</button>
+                            )}
                         </div>
                         <div className="hidden sm:flex items-center gap-3">
                             <a href={`https://wa.me/91${settings.whatsapp}`} target="_blank" rel="noreferrer" className="flex bg-green-500 text-white px-5 py-3 rounded-full font-bold hover:bg-green-600 transition-all shadow-xl hover:shadow-green-500/25 hover:-translate-y-0.5 items-center gap-2">
@@ -583,32 +675,47 @@ const MainWebsite = () => {
                                         />
                                     </div>
                                     <div className="col-span-1 sm:col-span-2">
-                                        <label className="block text-sm font-bold text-slate-700 mb-3">Select Services & Quantity</label>
-                                        <div className="bg-slate-50 border border-slate-200 rounded-xl p-2 sm:p-4 max-h-60 overflow-y-auto space-y-2">
-                                            {isLoadingServices ? (
-                                                <div className="p-4 text-center text-sm font-bold text-slate-500">Loading...</div>
-                                            ) : dbServices.length === 0 ? (
-                                                <div className="p-4 text-center text-sm font-bold text-slate-500">No services available</div>
-                                            ) : (
-                                                dbServices.map((service, idx) => {
-                                                    const cartItem = formData.items.find(item => item.name === service.name);
-                                                    const qty = cartItem ? cartItem.quantity : 0;
-                                                    return (
-                                                        <div key={idx} className="flex items-center justify-between bg-white p-3 rounded-lg border border-slate-100 shadow-sm hover:border-brand-200 transition-colors">
-                                                            <div>
-                                                                <div className="font-bold text-slate-800 text-sm">{service.name}</div>
-                                                                <div className="text-xs text-brand-600 font-semibold">₹{service.price}</div>
+                                        <button 
+                                            type="button" 
+                                            onClick={() => setIsServicesOpen(!isServicesOpen)}
+                                            className="w-full flex items-center justify-between bg-white border border-slate-200 rounded-xl p-4 text-left focus:outline-none focus:ring-2 focus:ring-brand-500/50 transition-all hover:bg-slate-50 shadow-sm"
+                                        >
+                                            <div>
+                                                <span className="block text-sm font-bold text-slate-800">Select Services & Quantity</span>
+                                                <span className="text-xs text-brand-600 font-bold mt-1 inline-block">{formData.items.reduce((acc, item) => acc + item.quantity, 0)} items selected</span>
+                                            </div>
+                                            <svg className={`w-5 h-5 text-slate-500 transition-transform duration-300 ${isServicesOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
+                                            </svg>
+                                        </button>
+                                        
+                                        {isServicesOpen && (
+                                            <div className="mt-3 bg-slate-50 border border-slate-200 rounded-xl p-2 sm:p-4 max-h-60 overflow-y-auto space-y-2">
+                                                {isLoadingServices ? (
+                                                    <div className="p-4 text-center text-sm font-bold text-slate-500">Loading...</div>
+                                                ) : dbServices.length === 0 ? (
+                                                    <div className="p-4 text-center text-sm font-bold text-slate-500">No services available</div>
+                                                ) : (
+                                                    dbServices.map((service, idx) => {
+                                                        const cartItem = formData.items.find(item => item.name === service.name);
+                                                        const qty = cartItem ? cartItem.quantity : 0;
+                                                        return (
+                                                            <div key={idx} className="flex items-center justify-between bg-white p-3 rounded-lg border border-slate-100 shadow-sm hover:border-brand-200 transition-colors">
+                                                                <div>
+                                                                    <div className="font-bold text-slate-800 text-sm">{service.name}</div>
+                                                                    <div className="text-xs text-brand-600 font-semibold">₹{service.price}</div>
+                                                                </div>
+                                                                <div className="flex items-center gap-3">
+                                                                    <button type="button" onClick={() => handleQuantityChange(service, -1)} className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-lg transition-colors ${qty > 0 ? 'bg-brand-100 text-brand-600 hover:bg-brand-200' : 'bg-slate-100 text-slate-400 cursor-not-allowed'}`} disabled={qty === 0}>-</button>
+                                                                    <span className="w-4 text-center font-bold text-slate-800">{qty}</span>
+                                                                    <button type="button" onClick={() => handleQuantityChange(service, 1)} className="w-8 h-8 rounded-full bg-brand-100 text-brand-600 hover:bg-brand-200 flex items-center justify-center font-bold text-lg transition-colors">+</button>
+                                                                </div>
                                                             </div>
-                                                            <div className="flex items-center gap-3">
-                                                                <button type="button" onClick={() => handleQuantityChange(service, -1)} className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-lg transition-colors ${qty > 0 ? 'bg-brand-100 text-brand-600 hover:bg-brand-200' : 'bg-slate-100 text-slate-400 cursor-not-allowed'}`} disabled={qty === 0}>-</button>
-                                                                <span className="w-4 text-center font-bold text-slate-800">{qty}</span>
-                                                                <button type="button" onClick={() => handleQuantityChange(service, 1)} className="w-8 h-8 rounded-full bg-brand-100 text-brand-600 hover:bg-brand-200 flex items-center justify-center font-bold text-lg transition-colors">+</button>
-                                                            </div>
-                                                        </div>
-                                                    )
-                                                })
-                                            )}
-                                        </div>
+                                                        )
+                                                    })
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">

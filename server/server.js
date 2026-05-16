@@ -138,6 +138,94 @@ app.put('/api/settings', async (req, res) => {
     }
 });
 
+const Customer = require('./models/Customer');
+const nodemailer = require('nodemailer');
+const jwt = require('jsonwebtoken');
+
+const JWT_SECRET = process.env.JWT_SECRET || 'laundry_super_secret_key';
+
+// Nodemailer transporter (Configure your Gmail in .env to use real emails)
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+    }
+});
+
+// --- AUTHENTICATION ROUTES ---
+
+// 1. Send OTP
+app.post('/api/auth/send-otp', async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) return res.status(400).json({ error: 'Email is required' });
+
+        const otp = Math.floor(1000 + Math.random() * 9000).toString(); // 4-digit OTP
+        const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+        // Find or create customer
+        let customer = await Customer.findOne({ email });
+        if (!customer) {
+            customer = new Customer({ email });
+        }
+        
+        customer.otp = otp;
+        customer.otpExpiresAt = otpExpiresAt;
+        await customer.save();
+
+        if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+            await transporter.sendMail({
+                from: `"Clean & Care" <${process.env.EMAIL_USER}>`,
+                to: email,
+                subject: 'Your Login OTP',
+                html: `<p>Your One-Time Password (OTP) for Clean & Care Laundry is: <strong>${otp}</strong>.</p><p>It is valid for 10 minutes.</p>`
+            });
+            console.log(`OTP sent to ${email}`);
+        } else {
+            console.log(`[DEVELOPMENT MODE] Email not configured. The OTP for ${email} is: ${otp}`);
+        }
+
+        res.status(200).json({ success: true, message: 'OTP sent to email.' });
+    } catch (error) {
+        console.error('Send OTP error:', error);
+        res.status(500).json({ error: 'Failed to send OTP' });
+    }
+});
+
+// 2. Verify OTP
+app.post('/api/auth/verify-otp', async (req, res) => {
+    try {
+        const { email, otp } = req.body;
+        
+        // For rapid testing, if no EMAIL_USER is configured, allow 1234
+        const customer = await Customer.findOne({ email });
+        
+        if (!customer) return res.status(404).json({ error: 'User not found' });
+        
+        if (!process.env.EMAIL_USER && otp === '1234') {
+            // Bypass for testing
+        } else {
+            if (customer.otp !== otp) return res.status(400).json({ error: 'Invalid OTP' });
+            if (customer.otpExpiresAt < new Date()) return res.status(400).json({ error: 'OTP has expired' });
+        }
+
+        // Clear OTP
+        customer.otp = null;
+        customer.otpExpiresAt = null;
+        await customer.save();
+
+        // Generate Token
+        const token = jwt.sign({ id: customer._id, email: customer.email }, JWT_SECRET, { expiresIn: '7d' });
+
+        res.status(200).json({ success: true, token, customer: { email: customer.email, name: customer.name, phone: customer.phone } });
+    } catch (error) {
+        console.error('Verify OTP error:', error);
+        res.status(500).json({ error: 'Failed to verify OTP' });
+    }
+});
+
+
 // Start Server
 app.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
