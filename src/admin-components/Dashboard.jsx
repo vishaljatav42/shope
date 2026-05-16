@@ -174,7 +174,7 @@ const Dashboard = () => {
                         )}
                       </div>
                     </td>
-                    <td>
+                    <td style={{ whiteSpace: 'nowrap' }}>
                       <div style={{ fontWeight: 500 }}>{booking.date}</div>
                       <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginTop: '4px' }}>{booking.time}</div>
                     </td>
@@ -189,7 +189,7 @@ const Dashboard = () => {
                           {booking.paymentMethod || 'Cash on Delivery'}
                         </span>
                         {booking.totalAmount > 0 && (
-                          <span className="text-sm font-bold text-slate-800 mt-1">₹{booking.totalAmount}</span>
+                          <span className="text-sm font-bold text-[var(--text-primary)] mt-1">₹{booking.totalAmount}</span>
                         )}
                         <select 
                           value={booking.paymentStatus || 'Pending'}
@@ -218,15 +218,17 @@ const Dashboard = () => {
                         className={`badge status-select ${
                           booking.status === 'Completed' ? 'status-completed' : 
                           booking.status === 'Cancelled' ? 'status-cancelled' : 
-                          ['Confirmed', 'Picked Up', 'Washing', 'Ironing', 'Out For Delivery'].includes(booking.status) ? 'status-confirmed' : 'status-pending'
+                          ['Confirmed', 'Pickup Assigned', 'Picked Up', 'Washing', 'Ironing', 'Packing', 'Out For Delivery'].includes(booking.status) ? 'status-confirmed' : 'status-pending'
                         }`}
                         style={{ outline: 'none', cursor: 'pointer' }}
                       >
                         <option value="Pending">Pending</option>
                         <option value="Confirmed">Confirmed</option>
+                        <option value="Pickup Assigned">Pickup Assigned</option>
                         <option value="Picked Up">Picked Up</option>
                         <option value="Washing">Washing</option>
                         <option value="Ironing">Ironing</option>
+                        <option value="Packing">Packing</option>
                         <option value="Out For Delivery">Out For Delivery</option>
                         <option value="Completed">Completed</option>
                         <option value="Cancelled">Cancelled</option>

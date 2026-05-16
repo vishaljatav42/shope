@@ -18,6 +18,15 @@ const customerSchema = new mongoose.Schema({
         type: String,
         default: ''
     },
+    gender: {
+        type: String,
+        enum: ['Male', 'Female', 'Other', ''],
+        default: ''
+    },
+    profilePhoto: {
+        type: String,
+        default: ''
+    },
     address: {
         fullAddress: { type: String, default: '' },
         landmark: { type: String, default: '' },

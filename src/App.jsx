@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Shirt, Sparkles, Sofa, Footprints, Phone, MessageCircle, MapPin, Droplets, ArrowRight, CheckCircle2, Clock, X, Users, Settings, CalendarCheck, Edit2, Save } from 'lucide-react';
+import { Shirt, Sparkles, Sofa, Footprints, Phone, MessageCircle, MapPin, Droplets, ArrowRight, CheckCircle2, Clock, X, Users, Settings, CalendarCheck, Edit2, Save, RefreshCw, FileText } from 'lucide-react';
 
 import { Routes, Route } from 'react-router-dom';
 import AdminApp from './AdminApp';
@@ -41,7 +41,9 @@ const MainWebsite = () => {
     const [customerProfileData, setCustomerProfileData] = useState(null);
     const [loadingProfile, setLoadingProfile] = useState(false);
     const [isEditingProfile, setIsEditingProfile] = useState(false);
-    const [editProfileForm, setEditProfileForm] = useState({ phone: '', address: '' });
+    const [editProfileForm, setEditProfileForm] = useState({ phone: '', address: '', landmark: '', pincode: '', gender: '' });
+    const [isEditingPrefs, setIsEditingPrefs] = useState(false);
+    const [editPrefsForm, setEditPrefsForm] = useState({});
     
     // Booking Form State
     const [bookingStep, setBookingStep] = useState(1);
@@ -75,18 +77,43 @@ const MainWebsite = () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     phone: editProfileForm.phone,
-                    'address.fullAddress': editProfileForm.address
+                    gender: editProfileForm.gender,
+                    'address.fullAddress': editProfileForm.address,
+                    'address.landmark': editProfileForm.landmark,
+                    'address.pincode': editProfileForm.pincode
                 })
             });
             if (res.ok) {
                 const updatedCustomer = await res.json();
-                setCustomerProfileData({ ...customerProfileData, phone: updatedCustomer.phone, address: updatedCustomer.address });
+                setCustomerProfileData({ ...customerProfileData, phone: updatedCustomer.phone, address: updatedCustomer.address, gender: updatedCustomer.gender });
                 setIsEditingProfile(false);
             } else {
                 alert('Failed to update profile');
             }
         } catch (error) {
             console.error('Error updating profile:', error);
+            alert('Failed to connect to server');
+        }
+    };
+
+    const handleSavePrefs = async () => {
+        try {
+            const res = await fetch(`http://localhost:8000/api/customers/${customer.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    preferences: editPrefsForm
+                })
+            });
+            if (res.ok) {
+                const updatedCustomer = await res.json();
+                setCustomerProfileData({ ...customerProfileData, preferences: updatedCustomer.preferences });
+                setIsEditingPrefs(false);
+            } else {
+                alert('Failed to update preferences');
+            }
+        } catch (error) {
+            console.error('Error updating preferences:', error);
             alert('Failed to connect to server');
         }
     };
@@ -1286,7 +1313,10 @@ const MainWebsite = () => {
                                             <button onClick={() => {
                                                 setEditProfileForm({
                                                     phone: customerProfileData.phone || customerProfileData.bookings?.[0]?.phone || '',
-                                                    address: customerProfileData.address?.fullAddress || customerProfileData.bookings?.[0]?.address || ''
+                                                    address: customerProfileData.address?.fullAddress || customerProfileData.bookings?.[0]?.address || '',
+                                                    landmark: customerProfileData.address?.landmark || '',
+                                                    pincode: customerProfileData.address?.pincode || '',
+                                                    gender: customerProfileData.gender || ''
                                                 });
                                                 setIsEditingProfile(true);
                                             }} className="text-brand-600 hover:bg-brand-50 p-1.5 rounded-md transition-colors flex items-center gap-1 text-[10px] font-bold">
@@ -1310,11 +1340,37 @@ const MainWebsite = () => {
                                         <div>
                                             <p className="text-xs text-slate-500 font-medium">Default Address</p>
                                             {!isEditingProfile ? (
-                                                <p className="text-sm font-bold text-slate-800 break-words">{customerProfileData.address?.fullAddress || customerProfileData.bookings?.[0]?.address || 'Not added'}</p>
+                                                <p className="text-sm font-bold text-slate-800 break-words">
+                                                    {customerProfileData.address?.fullAddress || customerProfileData.bookings?.[0]?.address || 'Not added'}
+                                                    {customerProfileData.address?.landmark && ` (Near ${customerProfileData.address.landmark})`}
+                                                </p>
                                             ) : (
                                                 <textarea value={editProfileForm.address} onChange={(e) => setEditProfileForm({...editProfileForm, address: e.target.value})} className="w-full mt-1 text-sm bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 outline-none focus:ring-1 focus:ring-brand-500 font-medium text-slate-900 resize-none" rows="2" placeholder="Full address..." />
                                             )}
                                         </div>
+                                        {isEditingProfile && (
+                                            <>
+                                                <div className="grid grid-cols-2 gap-3">
+                                                    <div>
+                                                        <p className="text-xs text-slate-500 font-medium">Landmark</p>
+                                                        <input type="text" value={editProfileForm.landmark} onChange={(e) => setEditProfileForm({...editProfileForm, landmark: e.target.value})} className="w-full mt-1 text-sm bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 outline-none focus:ring-1 focus:ring-brand-500 font-medium text-slate-900" placeholder="Near..." />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs text-slate-500 font-medium">Pincode</p>
+                                                        <input type="text" value={editProfileForm.pincode} onChange={(e) => setEditProfileForm({...editProfileForm, pincode: e.target.value})} className="w-full mt-1 text-sm bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 outline-none focus:ring-1 focus:ring-brand-500 font-medium text-slate-900" placeholder="464001" />
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs text-slate-500 font-medium">Gender</p>
+                                                    <select value={editProfileForm.gender} onChange={(e) => setEditProfileForm({...editProfileForm, gender: e.target.value})} className="w-full mt-1 text-sm bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 outline-none focus:ring-1 focus:ring-brand-500 font-medium text-slate-900">
+                                                        <option value="">Select Gender</option>
+                                                        <option value="Male">Male</option>
+                                                        <option value="Female">Female</option>
+                                                        <option value="Other">Other</option>
+                                                    </select>
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
                                 </div>
                                 
@@ -1339,19 +1395,46 @@ const MainWebsite = () => {
                                 </div>
                                 
                                 <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
-                                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4 flex items-center gap-2">
-                                        <Settings size={14} /> My Preferences
-                                    </h4>
-                                    {customerProfileData.preferences ? (
-                                        <div className="flex flex-wrap gap-2">
-                                            {Object.entries(customerProfileData.preferences).filter(([k,v]) => v).map(([key]) => (
-                                                <span key={key} className="bg-brand-50 text-brand-600 text-xs font-bold px-2 py-1 rounded-md capitalize border border-brand-100">
-                                                    {key.replace(/([A-Z])/g, ' $1').trim()}
-                                                </span>
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+                                            <Settings size={14} /> My Preferences
+                                        </h4>
+                                        {!isEditingPrefs ? (
+                                            <button onClick={() => {
+                                                setEditPrefsForm(customerProfileData.preferences || {
+                                                    regularWash: true, dryClean: false, steamIron: false, premiumCare: false, separateWhite: false, perfume: false
+                                                });
+                                                setIsEditingPrefs(true);
+                                            }} className="text-brand-600 hover:bg-brand-50 p-1.5 rounded-md transition-colors flex items-center gap-1 text-[10px] font-bold">
+                                                <Edit2 size={12} /> Edit
+                                            </button>
+                                        ) : (
+                                            <button onClick={handleSavePrefs} className="text-emerald-600 hover:bg-emerald-50 p-1.5 rounded-md transition-colors flex items-center gap-1 text-[10px] font-bold">
+                                                <Save size={12} /> Save
+                                            </button>
+                                        )}
+                                    </div>
+                                    {!isEditingPrefs ? (
+                                        customerProfileData.preferences && Object.values(customerProfileData.preferences).some(v => v === true) ? (
+                                            <div className="flex flex-wrap gap-2">
+                                                {Object.entries(customerProfileData.preferences).filter(([k,v]) => v === true).map(([key]) => (
+                                                    <span key={key} className="bg-brand-50 text-brand-600 text-xs font-bold px-2 py-1 rounded-md capitalize border border-brand-100">
+                                                        {key.replace(/([A-Z])/g, ' $1').trim()}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <p className="text-sm text-slate-500">No preferences saved.</p>
+                                        )
+                                    ) : (
+                                        <div className="flex flex-col gap-2">
+                                            {Object.keys(editPrefsForm).filter(k => k !== '_id').map(key => (
+                                                <label key={key} className="flex items-center justify-between cursor-pointer p-2 hover:bg-slate-50 rounded-lg">
+                                                    <span className="text-sm font-medium text-slate-700 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
+                                                    <input type="checkbox" checked={editPrefsForm[key]} onChange={(e) => setEditPrefsForm({...editPrefsForm, [key]: e.target.checked})} className="rounded text-brand-600 focus:ring-brand-500 w-4 h-4 cursor-pointer" />
+                                                </label>
                                             ))}
                                         </div>
-                                    ) : (
-                                        <p className="text-sm text-slate-500">No preferences saved.</p>
                                     )}
                                 </div>
                             </div>
@@ -1382,24 +1465,26 @@ const MainWebsite = () => {
                                                         <div className="overflow-hidden h-2 mb-2 text-xs flex rounded-full bg-slate-100">
                                                             <div style={{ width: `${
                                                                 booking.status === 'Pending' ? '0%' :
-                                                                booking.status === 'Confirmed' ? '12%' :
+                                                                ['Confirmed', 'Pickup Assigned'].includes(booking.status) ? '12%' :
                                                                 booking.status === 'Picked Up' ? '25%' :
                                                                 booking.status === 'Washing' ? '50%' :
-                                                                booking.status === 'Ironing' ? '75%' :
-                                                                booking.status === 'Out For Delivery' ? '100%' : '0%'
+                                                                booking.status === 'Ironing' ? '62%' :
+                                                                booking.status === 'Packing' ? '75%' :
+                                                                booking.status === 'Out For Delivery' ? '88%' :
+                                                                booking.status === 'Delivered' ? '100%' : '0%'
                                                             }` }} className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-brand-500 transition-all duration-500 rounded-full"></div>
                                                         </div>
                                                         <div className="flex justify-between text-[8px] sm:text-[9px] font-extrabold text-slate-400 uppercase tracking-wider relative px-1">
                                                             {(() => {
-                                                                const stages = ['Pending', 'Confirmed', 'Picked Up', 'Washing', 'Ironing', 'Out For Delivery', 'Completed'];
+                                                                const stages = ['Pending', 'Confirmed', 'Pickup Assigned', 'Picked Up', 'Washing', 'Ironing', 'Packing', 'Out For Delivery', 'Delivered', 'Completed'];
                                                                 const currentIdx = stages.indexOf(booking.status);
                                                                 return (
                                                                     <>
                                                                         <span className={`w-1/5 text-left ${currentIdx >= 0 ? 'text-brand-600' : ''}`}>Pending</span>
-                                                                        <span className={`w-1/5 text-center ${currentIdx >= 2 ? 'text-brand-600' : ''}`}>Picked Up</span>
-                                                                        <span className={`w-1/5 text-center ${currentIdx >= 3 ? 'text-brand-600' : ''}`}>Washing</span>
-                                                                        <span className={`w-1/5 text-center ${currentIdx >= 4 ? 'text-brand-600' : ''}`}>Ironing</span>
-                                                                        <span className={`w-1/5 text-right ${currentIdx >= 5 ? 'text-brand-600' : ''}`}>Delivery</span>
+                                                                        <span className={`w-1/5 text-center ${currentIdx >= 3 ? 'text-brand-600' : ''}`}>Picked Up</span>
+                                                                        <span className={`w-1/5 text-center ${currentIdx >= 4 ? 'text-brand-600' : ''}`}>Washing</span>
+                                                                        <span className={`w-1/5 text-center ${currentIdx >= 6 ? 'text-brand-600' : ''}`}>Packing</span>
+                                                                        <span className={`w-1/5 text-right ${currentIdx >= 8 ? 'text-brand-600' : ''}`}>Delivery</span>
                                                                     </>
                                                                 )
                                                             })()}
@@ -1413,9 +1498,27 @@ const MainWebsite = () => {
                                                         </span>
                                                     ))}
                                                 </div>
-                                                <div className="flex justify-between items-center">
+                                                <div className="flex justify-between items-center mb-4">
                                                     <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Amount</span>
                                                     <span className="text-lg font-black text-slate-900">₹{booking.totalAmount}</span>
+                                                </div>
+                                                <div className="flex flex-wrap gap-2 pt-4 border-t border-slate-50">
+                                                    {booking.status === 'Completed' && (
+                                                        <button onClick={() => alert('Invoice Download functionality will be available shortly!')} className="flex-1 bg-white border border-slate-200 hover:border-brand-300 text-slate-600 hover:text-brand-600 text-[10px] font-bold py-2 rounded-lg transition-colors flex items-center justify-center gap-1">
+                                                            <FileText size={12} /> Invoice
+                                                        </button>
+                                                    )}
+                                                    <button onClick={() => {
+                                                        setFormData(prev => ({ ...prev, items: booking.items }));
+                                                        setShowProfileModal(false);
+                                                        setBookingStep(2);
+                                                        document.getElementById('booking')?.scrollIntoView({ behavior: 'smooth' });
+                                                    }} className="flex-1 bg-white border border-slate-200 hover:border-brand-300 text-slate-600 hover:text-brand-600 text-[10px] font-bold py-2 rounded-lg transition-colors flex items-center justify-center gap-1">
+                                                        <RefreshCw size={12} /> Repeat Order
+                                                    </button>
+                                                    <a href={`https://wa.me/91${settings.whatsappNumber}?text=Hi, I need help with my order #${booking._id.slice(-6).toUpperCase()}`} target="_blank" rel="noreferrer" className="flex-1 bg-brand-50 text-brand-700 hover:bg-brand-100 text-[10px] font-bold py-2 rounded-lg transition-colors flex items-center justify-center gap-1">
+                                                        <MessageCircle size={12} /> Support
+                                                    </a>
                                                 </div>
                                             </div>
                                         ))
