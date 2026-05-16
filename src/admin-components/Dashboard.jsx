@@ -163,7 +163,7 @@ const Dashboard = () => {
                       <div style={{ fontWeight: 500 }}>{booking.date}</div>
                       <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginTop: '4px' }}>{booking.time}</div>
                     </td>
-                    <td style={{ maxWidth: '200px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={booking.address}>
+                    <td style={{ maxWidth: '250px', whiteSpace: 'normal', wordWrap: 'break-word', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
                       {booking.address}
                     </td>
                     <td>
@@ -190,17 +190,17 @@ const Dashboard = () => {
                       <select 
                         value={booking.status || 'Pending'} 
                         onChange={(e) => handleStatusChange(booking._id, e.target.value)}
-                        className={`badge ${
+                        className={`badge status-select ${
                           booking.status === 'Completed' ? 'status-completed' : 
                           booking.status === 'Cancelled' ? 'status-cancelled' : 
                           booking.status === 'Confirmed' ? 'status-confirmed' : 'status-pending'
                         }`}
-                        style={{ outline: 'none', cursor: 'pointer', appearance: 'none', paddingRight: '20px' }}
+                        style={{ outline: 'none', cursor: 'pointer' }}
                       >
                         <option value="Pending" style={{ color: 'initial', backgroundColor: 'initial' }}>Pending</option>
-                        <option value="Confirmed" style={{ color: 'initial', backgroundColor: 'initial' }}>Confirmed</option>
-                        <option value="Completed" style={{ color: 'initial', backgroundColor: 'initial' }}>Completed</option>
-                        <option value="Cancelled" style={{ color: 'initial', backgroundColor: 'initial' }}>Cancelled</option>
+                        <option value="Confirmed" style={{ color: 'initial', backgroundColor: 'initial' }}>Accept</option>
+                        <option value="Completed" style={{ color: 'initial', backgroundColor: 'initial' }}>Complete</option>
+                        <option value="Cancelled" style={{ color: 'initial', backgroundColor: 'initial' }}>Cancel</option>
                       </select>
                     </td>
                   </tr>

@@ -4,6 +4,7 @@ import Sidebar from './admin-components/Sidebar';
 import Dashboard from './admin-components/Dashboard';
 import ServicesManager from './admin-components/ServicesManager';
 import SettingsManager from './admin-components/SettingsManager';
+import CustomersManager from './admin-components/CustomersManager';
 import Login from './admin-components/Login';
 import './admin.css';
 
@@ -49,9 +50,10 @@ function AdminApp() {
         <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} onLogout={handleLogout} />
         <main className="main-content">
           {activeTab === 'dashboard' && <Dashboard />}
+          {activeTab === 'customers' && <CustomersManager />}
           {activeTab === 'services' && <ServicesManager />}
           {activeTab === 'settings' && <SettingsManager onThemeChange={setIsDarkMode} />}
-          {activeTab !== 'dashboard' && activeTab !== 'services' && activeTab !== 'settings' && (
+          {activeTab !== 'dashboard' && activeTab !== 'customers' && activeTab !== 'services' && activeTab !== 'settings' && (
             <div className="empty-state animate-fade-in">
               <h2>Feature Coming Soon</h2>
               <p>This section is under development.</p>

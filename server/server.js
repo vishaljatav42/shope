@@ -237,6 +237,68 @@ app.post('/api/auth/verify-otp', async (req, res) => {
     }
 });
 
+// --- CUSTOMER CRM ROUTES ---
+
+// 1. Get all customers
+app.get('/api/customers', async (req, res) => {
+    try {
+        // Fetch all customers, lean to improve performance
+        const customers = await Customer.find().lean().sort({ createdAt: -1 });
+        
+        // For each customer, maybe calculate total orders/spent if not saved in model?
+        // Since that's heavy, let's just return customers. We can aggregate later or in the dashboard.
+        res.status(200).json(customers);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// 2. Get single customer by ID + their bookings
+app.get('/api/customers/:id', async (req, res) => {
+    try {
+        const customer = await Customer.findById(req.params.id).lean();
+        if (!customer) return res.status(404).json({ error: 'Customer not found' });
+
+        // Fetch all bookings for this customer email
+        const bookings = await Booking.find({ email: customer.email }).sort({ createdAt: -1 }).lean();
+        
+        // Calculate aggregations
+        const totalOrders = bookings.length;
+        const totalSpent = bookings.reduce((sum, b) => sum + (b.totalAmount || 0), 0);
+        const activeOrders = bookings.filter(b => ['Pending', 'Confirmed'].includes(b.status)).length;
+        const cancelledOrders = bookings.filter(b => b.status === 'Cancelled').length;
+        const completedOrders = bookings.filter(b => b.status === 'Completed').length;
+        
+        res.status(200).json({
+            ...customer,
+            bookings,
+            stats: {
+                totalOrders,
+                totalSpent,
+                activeOrders,
+                cancelledOrders,
+                completedOrders
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// 3. Update customer (Admin)
+app.put('/api/customers/:id', async (req, res) => {
+    try {
+        const updatedCustomer = await Customer.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            { new: true, runValidators: true }
+        );
+        if (!updatedCustomer) return res.status(404).json({ error: 'Customer not found' });
+        res.status(200).json(updatedCustomer);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
 
 // Start Server
 app.listen(PORT, () => {

@@ -21,7 +21,7 @@ const MainWebsite = () => {
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [bookingSuccess, setBookingSuccess] = useState(false);
-    const [isServicesOpen, setIsServicesOpen] = useState(false);
+    const [isServicesOpen, setIsServicesOpen] = useState(true);
     const [paymentScreenshot, setPaymentScreenshot] = useState('');
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [selectedImage, setSelectedImage] = useState(null);
@@ -146,6 +146,7 @@ const MainWebsite = () => {
         e.preventDefault();
         if (formData.items.length === 0) {
             alert('Please select at least one service by adding quantities.');
+            setIsServicesOpen(true);
             return;
         }
         
@@ -158,6 +159,7 @@ const MainWebsite = () => {
         
         const payload = {
             ...formData,
+            email: customer.email,
             totalAmount: formData.items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
         };
         
