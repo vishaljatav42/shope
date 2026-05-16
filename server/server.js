@@ -144,14 +144,19 @@ const jwt = require('jsonwebtoken');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'laundry_super_secret_key';
 
-// Nodemailer transporter (Configure your Gmail in .env to use real emails)
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-    }
-});
+// Nodemailer transporter helper (Fetches credentials from DB)
+async function getTransporter() {
+    const settings = await Setting.findOne();
+    const user = settings?.smtpUser || process.env.EMAIL_USER;
+    const pass = settings?.smtpPassword || process.env.EMAIL_PASS;
+    
+    if (!user || !pass) return null;
+    
+    return nodemailer.createTransport({
+        service: 'gmail',
+        auth: { user, pass }
+    });
+}
 
 // --- AUTHENTICATION ROUTES ---
 
@@ -174,9 +179,13 @@ app.post('/api/auth/send-otp', async (req, res) => {
         customer.otpExpiresAt = otpExpiresAt;
         await customer.save();
 
-        if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+        const transporter = await getTransporter();
+        const settings = await Setting.findOne();
+        const emailUser = settings?.smtpUser || process.env.EMAIL_USER;
+
+        if (transporter && emailUser) {
             await transporter.sendMail({
-                from: `"Clean & Care" <${process.env.EMAIL_USER}>`,
+                from: `"Clean & Care" <${emailUser}>`,
                 to: email,
                 subject: 'Your Login OTP',
                 html: `<p>Your One-Time Password (OTP) for Clean & Care Laundry is: <strong>${otp}</strong>.</p><p>It is valid for 10 minutes.</p>`
@@ -203,7 +212,10 @@ app.post('/api/auth/verify-otp', async (req, res) => {
         
         if (!customer) return res.status(404).json({ error: 'User not found' });
         
-        if (!process.env.EMAIL_USER && otp === '1234') {
+        const settings = await Setting.findOne();
+        const hasEmailConfig = settings?.smtpUser || process.env.EMAIL_USER;
+        
+        if (!hasEmailConfig && otp === '1234') {
             // Bypass for testing
         } else {
             if (customer.otp !== otp) return res.status(400).json({ error: 'Invalid OTP' });

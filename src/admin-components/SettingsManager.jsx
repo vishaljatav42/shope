@@ -6,12 +6,15 @@ const SettingsManager = ({ onThemeChange }) => {
   const [activeTab, setActiveTab] = useState('general');
   const [settings, setSettings] = useState({
     businessName: '', tagline: '', address: '',
+    gstNumber: '', instagram: '', facebook: '',
+    openingTime: '09:00 AM', closingTime: '08:00 PM', workingDays: 'Monday - Saturday',
     phone: '', whatsapp: '', email: '', mapLocation: '',
     homeDelivery: true, minimumOrderAmount: 0, pickupCharges: 0, expressDeliveryCharges: 100,
     cashOnDelivery: true, upiPaymentEnabled: true, upiId: '',
     whatsappAlerts: true, smsAlerts: false, emailAlerts: false,
+    smtpUser: '', smtpPassword: '',
     darkMode: false, primaryColor: '#6366f1',
-    adminUsername: '', adminPassword: ''
+    adminUsername: '', adminPassword: '', requireOtpLogin: false
   });
   
   const [qrCodeImage, setQrCodeImage] = useState('');
@@ -88,6 +91,7 @@ const SettingsManager = ({ onThemeChange }) => {
 
   const tabs = [
     { id: 'general', label: 'General', icon: Building2 },
+    { id: 'operations', label: 'Operations', icon: CalendarClock },
     { id: 'contact', label: 'Contact', icon: Phone },
     { id: 'booking', label: 'Booking', icon: CalendarClock },
     { id: 'payments', label: 'Payments', icon: CreditCard },
@@ -162,7 +166,42 @@ const SettingsManager = ({ onThemeChange }) => {
                   </div>
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Shop Address</label>
-                    <textarea name="address" value={settings.address} onChange={handleChange} rows="3" className="form-input w-full   focus:border-brand-500 rounded-lg px-4 py-3  resize-y"></textarea>
+                    <textarea name="address" value={settings.address} onChange={handleChange} rows="3" className="form-input w-full focus:border-brand-500 rounded-lg px-4 py-3 resize-y"></textarea>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">GST Number</label>
+                    <input type="text" name="gstNumber" value={settings.gstNumber} onChange={handleChange} className="form-input w-full focus:border-brand-500 rounded-lg px-4 py-3" placeholder="Optional" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Instagram Link</label>
+                    <input type="text" name="instagram" value={settings.instagram} onChange={handleChange} className="form-input w-full focus:border-brand-500 rounded-lg px-4 py-3" placeholder="https://instagram.com/..." />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Facebook Link</label>
+                    <input type="text" name="facebook" value={settings.facebook} onChange={handleChange} className="form-input w-full focus:border-brand-500 rounded-lg px-4 py-3" placeholder="https://facebook.com/..." />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* OPERATIONS TAB */}
+            {activeTab === 'operations' && (
+              <div className="space-y-6 animate-fade-in">
+                <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
+                  <CalendarClock className="text-brand-400" /> Operational Hours
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Opening Time</label>
+                    <input type="time" name="openingTime" value={settings.openingTime} onChange={handleChange} className="form-input w-full focus:border-brand-500 rounded-lg px-4 py-3" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Closing Time</label>
+                    <input type="time" name="closingTime" value={settings.closingTime} onChange={handleChange} className="form-input w-full focus:border-brand-500 rounded-lg px-4 py-3" />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Working Days</label>
+                    <input type="text" name="workingDays" value={settings.workingDays} onChange={handleChange} placeholder="e.g. Monday - Saturday" className="form-input w-full focus:border-brand-500 rounded-lg px-4 py-3" />
                   </div>
                 </div>
               </div>
@@ -320,14 +359,14 @@ const SettingsManager = ({ onThemeChange }) => {
             {/* NOTIFICATIONS TAB */}
             {activeTab === 'notifications' && (
               <div className="space-y-6 animate-fade-in">
-                <h2 className="text-2xl font-bold  mb-6 flex items-center gap-3">
+                <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
                   <Bell className="text-brand-400" /> Notifications & Alerts
                 </h2>
                 
                 {['whatsappAlerts', 'smsAlerts', 'emailAlerts'].map(alert => (
-                  <div key={alert} className="flex items-center justify-between p-5 rounded-xl border  /50">
+                  <div key={alert} className="flex items-center justify-between p-5 rounded-xl border border-[var(--border-color)]">
                     <div>
-                      <h3 className="font-semibold  text-lg capitalize">{alert.replace('Alerts', '')} Alerts</h3>
+                      <h3 className="font-semibold text-lg capitalize">{alert.replace('Alerts', '')} Alerts</h3>
                       <p className="text-sm text-[var(--text-secondary)]">Send automated messages to customers via {alert.replace('Alerts', '')}</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
@@ -336,26 +375,55 @@ const SettingsManager = ({ onThemeChange }) => {
                     </label>
                   </div>
                 ))}
+
+                <div className="p-6 rounded-2xl border border-brand-500/20 bg-brand-500/5 mt-8">
+                  <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                    <Mail className="text-brand-400" size={20} /> Advanced Email (SMTP) Settings
+                  </h3>
+                  <p className="text-sm text-[var(--text-secondary)] mb-6">Configure your Gmail App Password here to send OTPs and booking confirmations automatically. Leave blank to use .env defaults.</p>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">SMTP User (Gmail)</label>
+                      <input type="email" name="smtpUser" value={settings.smtpUser} onChange={handleChange} className="form-input w-full focus:border-brand-500 rounded-lg px-4 py-3" placeholder="yourstore@gmail.com" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">SMTP App Password</label>
+                      <input type="password" name="smtpPassword" value={settings.smtpPassword} onChange={handleChange} className="form-input w-full focus:border-brand-500 rounded-lg px-4 py-3" placeholder="16-digit app password" />
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
 
             {/* SECURITY TAB */}
             {activeTab === 'security' && (
               <div className="space-y-8 animate-fade-in">
-                <h2 className="text-2xl font-bold  mb-6 flex items-center gap-3">
-                  <Shield className="text-brand-400" /> Admin Security
+                <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
+                  <Shield className="text-brand-400" /> Security & Authentication
                 </h2>
+
+                <div className="flex items-center justify-between p-5 rounded-xl border border-[var(--border-color)]">
+                  <div>
+                    <h3 className="font-semibold text-lg">Require OTP Login</h3>
+                    <p className="text-sm text-[var(--text-secondary)]">Customers must verify their email with an OTP before booking.</p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" name="requireOtpLogin" checked={settings.requireOtpLogin} onChange={handleChange} className="sr-only peer" />
+                    <div className="w-14 h-7 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-emerald-500"></div>
+                  </label>
+                </div>
                 
                 <div className="p-6 rounded-2xl border border-rose-500/20 bg-rose-500/5">
-                  <h3 className="text-lg font-bold  mb-4">Change Admin Credentials</h3>
+                  <h3 className="text-lg font-bold mb-4">Change Admin Credentials</h3>
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Admin Username</label>
-                      <input type="text" name="adminUsername" value={settings.adminUsername} onChange={handleChange} className="form-input w-full max-w-md   focus:border-rose-500 rounded-lg px-4 py-3 " />
+                      <input type="text" name="adminUsername" value={settings.adminUsername} onChange={handleChange} className="form-input w-full max-w-md focus:border-rose-500 rounded-lg px-4 py-3" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Admin Password</label>
-                      <input type="password" name="adminPassword" value={settings.adminPassword} onChange={handleChange} className="form-input w-full max-w-md   focus:border-rose-500 rounded-lg px-4 py-3 " />
+                      <input type="password" name="adminPassword" value={settings.adminPassword} onChange={handleChange} className="form-input w-full max-w-md focus:border-rose-500 rounded-lg px-4 py-3" />
                     </div>
                   </div>
                 </div>

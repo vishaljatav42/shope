@@ -1006,6 +1006,41 @@ const MainWebsite = () => {
                     </div>
                 </div>
             </footer>
+        {showLoginModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                <div className="bg-white rounded-2xl p-6 md:p-8 w-full max-w-md shadow-2xl relative animate-fade-in">
+                    <button onClick={() => setShowLoginModal(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors bg-slate-100 hover:bg-slate-200 rounded-full p-1">
+                        <X size={20} />
+                    </button>
+                    <h3 className="text-2xl font-bold text-slate-800 mb-2">Login Required</h3>
+                    <p className="text-slate-500 mb-6 text-sm leading-relaxed">Please log in with your email to complete your booking securely.</p>
+                    
+                    {!otpSent ? (
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-2">Email Address</label>
+                                <input type="email" value={loginEmail} onChange={e => setLoginEmail(e.target.value)} className="form-input w-full bg-slate-50 border border-slate-200 focus:border-brand-500 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-brand-500/20 transition-all font-medium" placeholder="you@example.com" />
+                            </div>
+                            <button onClick={handleSendOtp} disabled={authLoading || !loginEmail} className="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-brand-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                                {authLoading ? 'Sending...' : 'Send OTP'}
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="space-y-4 animate-fade-in">
+                            <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-2">Enter OTP</label>
+                                <input type="text" value={otp} onChange={e => setOtp(e.target.value)} className="form-input w-full bg-slate-50 border border-slate-200 focus:border-brand-500 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-brand-500/20 transition-all tracking-[0.5em] text-center font-bold text-xl" placeholder="1234" maxLength="4" />
+                                <p className="text-xs text-center text-slate-500 mt-3 font-medium">Default test OTP is <strong>1234</strong> if email is not configured in backend.</p>
+                            </div>
+                            <button onClick={handleVerifyOtp} disabled={authLoading || otp.length < 4} className="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-brand-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-2">
+                                {authLoading ? 'Verifying...' : 'Verify & Login'}
+                            </button>
+                            <button onClick={() => setOtpSent(false)} className="w-full text-sm text-brand-600 font-bold mt-3 hover:underline">Change Email Address</button>
+                        </div>
+                    )}
+                </div>
+            </div>
+        )}
         </div>
     );
 };

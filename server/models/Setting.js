@@ -29,13 +29,28 @@ const settingSchema = new mongoose.Schema({
     smsAlerts: { type: Boolean, default: false },
     emailAlerts: { type: Boolean, default: false },
 
+    // Advanced Business Details
+    gstNumber: { type: String, default: '' },
+    instagram: { type: String, default: '' },
+    facebook: { type: String, default: '' },
+
+    // Operational Settings
+    openingTime: { type: String, default: '09:00 AM' },
+    closingTime: { type: String, default: '08:00 PM' },
+    workingDays: { type: String, default: 'Monday - Saturday' },
+
     // Theme Settings
     darkMode: { type: Boolean, default: false },
     primaryColor: { type: String, default: '#6366f1' },
 
-    // Security Settings (Admin Login)
+    // Security & Auth Settings
     adminUsername: { type: String, default: 'admin' },
     adminPassword: { type: String, default: 'admin123' },
+    requireOtpLogin: { type: Boolean, default: false },
+
+    // Advanced Email Settings (SMTP)
+    smtpUser: { type: String, default: '' },
+    smtpPassword: { type: String, default: '' },
 
     updatedAt: {
         type: Date,
