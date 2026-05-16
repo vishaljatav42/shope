@@ -33,6 +33,10 @@ const bookingSchema = new mongoose.Schema({
         type: String,
         default: 'Cash on Delivery'
     },
+    paymentScreenshot: {
+        type: String,
+        default: ''
+    },
     status: {
         type: String,
         enum: ['Pending', 'Confirmed', 'Completed', 'Cancelled'],

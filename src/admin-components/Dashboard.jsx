@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
-import { CalendarCheck, Users, TrendingUp, RefreshCw, ArchiveRestore } from 'lucide-react'
+import { CalendarCheck, Users, TrendingUp, RefreshCw, ArchiveRestore, X } from 'lucide-react'
 
 const Dashboard = () => {
   const [bookings, setBookings] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const [selectedReceipt, setSelectedReceipt] = useState(null)
 
   const fetchBookings = async () => {
     try {
@@ -41,8 +42,6 @@ const Dashboard = () => {
   const totalBookings = bookings.length
   const todayBookings = bookings.filter(b => {
     const today = new Date().toISOString().split('T')[0]
-    // Assuming backend returns date string like YYYY-MM-DD or we can try formatting
-    // A simple approximation for "recent" or matching today's date based on createdAt
     if (b.createdAt) {
       return b.createdAt.startsWith(today)
     }
@@ -50,7 +49,7 @@ const Dashboard = () => {
   }).length
 
   return (
-    <div className="animate-fade-in">
+    <div className="animate-fade-in relative">
       <div className="header">
         <h1 className="header-title">Dashboard Overview</h1>
         <div className="header-actions">
@@ -164,6 +163,14 @@ const Dashboard = () => {
                         }`}>
                           {booking.paymentMethod || 'Cash on Delivery'}
                         </span>
+                        {booking.paymentScreenshot && (
+                          <button 
+                            onClick={() => setSelectedReceipt(booking.paymentScreenshot)}
+                            className="text-xs text-blue-500 hover:text-blue-400 font-bold text-left mt-1 underline cursor-pointer"
+                          >
+                            View Receipt
+                          </button>
+                        )}
                       </div>
                     </td>
                     <td>
@@ -190,6 +197,22 @@ const Dashboard = () => {
           </div>
         )}
       </div>
+
+      {selectedReceipt && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={() => setSelectedReceipt(null)}>
+          <div className="relative max-w-2xl w-full max-h-[90vh] bg-slate-900 rounded-2xl border border-slate-700 p-2 shadow-2xl flex flex-col" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center p-4 border-b border-slate-800">
+              <h3 className="text-white font-bold text-lg">Payment Receipt</h3>
+              <button onClick={() => setSelectedReceipt(null)} className="text-slate-400 hover:text-white bg-slate-800 p-2 rounded-full transition-colors">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="flex-1 overflow-auto p-4 flex justify-center items-center">
+              <img src={selectedReceipt} alt="Payment Receipt" className="max-w-full max-h-full object-contain rounded-lg" />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

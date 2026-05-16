@@ -16,7 +16,8 @@ const MainWebsite = () => {
         time: '',
         address: '',
         instructions: '',
-        paymentMethod: 'Cash on Delivery'
+        paymentMethod: 'Cash on Delivery',
+        paymentScreenshot: ''
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [bookingSuccess, setBookingSuccess] = useState(false);
@@ -113,7 +114,7 @@ const MainWebsite = () => {
                 setBookingSuccess(true);
                 
                 // Reset form
-                setFormData({ name: '', phone: '', service: 'Dry Cleaning', date: '', time: '', address: '', instructions: '', paymentMethod: 'Cash on Delivery' });
+                setFormData({ name: '', phone: '', service: 'Dry Cleaning', date: '', time: '', address: '', instructions: '', paymentMethod: 'Cash on Delivery', paymentScreenshot: '' });
                 setTimeout(() => setBookingSuccess(false), 5000);
             } else {
                 alert('Failed to save booking. Please try again.');
@@ -123,6 +124,21 @@ const MainWebsite = () => {
             alert('Server connection failed. Make sure the backend is running.');
         } finally {
             setIsSubmitting(false);
+        }
+    };
+
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            if (file.size > 5 * 1024 * 1024) {
+                alert('File size too large. Please upload an image under 5MB.');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setFormData(prev => ({ ...prev, paymentScreenshot: reader.result }));
+            };
+            reader.readAsDataURL(file);
         }
     };
 
@@ -617,6 +633,22 @@ const MainWebsite = () => {
                                                 {settings.upiId || 'Not Setup Yet'}
                                             </div>
                                             <p className="text-xs text-blue-600 mt-2">Scan the QR code or copy the UPI ID above. Our delivery boy will verify the payment at pickup.</p>
+                                            
+                                            <div className="mt-6 w-full text-left">
+                                                <label className="block text-sm font-bold text-slate-700 mb-2">Upload Payment Screenshot *</label>
+                                                <input 
+                                                    type="file" 
+                                                    accept="image/*" 
+                                                    onChange={handleFileChange}
+                                                    required={formData.paymentMethod === 'UPI'}
+                                                    className="w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-700 file:cursor-pointer cursor-pointer border border-blue-200 rounded-xl bg-white focus:outline-none"
+                                                />
+                                                {formData.paymentScreenshot && (
+                                                    <div className="mt-3 text-xs font-bold text-emerald-600 flex items-center gap-1">
+                                                        <CheckCircle2 size={14} /> Screenshot attached successfully
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                     )}
                                 </div>
